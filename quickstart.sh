@@ -33,6 +33,22 @@ print_warning() {
     echo "⚠️  $1"
 }
 
+# Helper: Run docker compose with a fallback that disables credentials store if helper is missing
+compose_with_workaround() {
+    # Usage: compose_with_workaround <args>
+    if [ -z "$COMPOSE_CMD" ]; then
+        return 1
+    fi
+    # Try normally first
+    if $COMPOSE_CMD "$@"; then
+        return 0
+    fi
+    print_warning "Compose command failed; retrying without credentials store (temporary workaround)…"
+    mkdir -p /tmp/docker-config-empty >/dev/null 2>&1 || true
+    printf '{}' > /tmp/docker-config-empty/config.json 2>/dev/null || true
+    DOCKER_CONFIG=/tmp/docker-config-empty $COMPOSE_CMD "$@"
+}
+
 # Helper: Check if a TCP port is listening and print a friendly status line
 print_port_status() {
     local port=$1
@@ -190,11 +206,11 @@ case $choice in
             exit 1
         fi
 
-        print_info "Pulling Docker images (this may take a while)..."
-        $COMPOSE_CMD pull
+    print_info "Pulling Docker images (this may take a while)..."
+    compose_with_workaround pull
         
         print_info "Starting services..."
-        $COMPOSE_CMD up -d
+    compose_with_workaround up -d
         
         print_success "Project 2 services started!"
         echo ""
@@ -339,8 +355,8 @@ case $choice in
                 if [ "$DOCKER_AVAILABLE" = true ] && [ -n "$COMPOSE_CMD" ]; then
                         (
                             cd project2-mlops-pipeline && \
-                            print_info "[Project 2] Pulling images…" && $COMPOSE_CMD pull && \
-                            print_info "[Project 2] Starting services…" && $COMPOSE_CMD up -d
+                            print_info "[Project 2] Pulling images…" && compose_with_workaround pull && \
+                            print_info "[Project 2] Starting services…" && compose_with_workaround up -d
                         ) || print_warning "[Project 2] Could not start Docker services"
                 else
                         print_warning "[Project 2] Skipped — Docker/Compose not detected"
