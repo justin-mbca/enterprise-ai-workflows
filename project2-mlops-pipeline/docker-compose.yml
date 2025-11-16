@@ -41,7 +41,7 @@ services:
       postgres:
         condition: service_healthy
     command: >
-      sh -c "pip install mlflow psycopg2-binary && 
+      sh -c "pip install mlflow==3.6.0 psycopg2-binary==2.9.11 && 
              mlflow server 
              --backend-store-uri postgresql://mlops_user:mlops_password@postgres:5432/mlops_db 
              --default-artifact-root /mlflow/artifacts 
@@ -52,19 +52,26 @@ services:
   jupyter:
     image: jupyter/datascience-notebook:latest
     container_name: mlops-jupyter
+    user: root
     environment:
       - JUPYTER_ENABLE_LAB=yes
-      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - MLFLOW_TRACKING_URI=http://mlflow-proxy
+      - NB_UID=1000
+      - NB_GID=100
+      - CHOWN_HOME=yes
+      - GRANT_SUDO=yes
     ports:
       - "8888:8888"
     volumes:
       - ./notebooks:/home/jovyan/work
       - ./models:/home/jovyan/models
       - ./data:/home/jovyan/data
+      - mlflow_artifacts:/mlflow/artifacts
     networks:
       - mlops-network
     depends_on:
       - mlflow
+      - mlflow-proxy
     command: start-notebook.sh --NotebookApp.token='' --NotebookApp.password=''
 
   # Model Deployment API (FastAPI)
@@ -86,7 +93,21 @@ services:
       - mlops-network
     depends_on:
       - mlflow
+      - mlflow-proxy
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Reverse proxy to satisfy MLflow Host header checks
+  mlflow-proxy:
+    image: nginx:alpine
+    container_name: mlops-mlflow-proxy
+    depends_on:
+      - mlflow
+    ports:
+      - "5001:80"
+    networks:
+      - mlops-network
+    volumes:
+      - ./mlflow/nginx.conf:/etc/nginx/conf.d/default.conf:ro
 
 networks:
   mlops-network:

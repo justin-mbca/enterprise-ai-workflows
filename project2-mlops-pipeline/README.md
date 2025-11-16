@@ -22,6 +22,7 @@ docker-compose logs -f
 ## Accessing Services
 
 - **MLflow UI**: http://localhost:5000
+- **MLflow Proxy**: http://localhost:5001 (for internal Docker communication)
 - **Jupyter Lab**: http://localhost:8888 (no password)
 - **API Documentation**: http://localhost:8000/docs
 - **PostgreSQL**: localhost:5432
@@ -103,10 +104,16 @@ Visit http://localhost:8000/docs for interactive API testing
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
 │  ┌──────────────┐      ┌──────────────┐              │
-│  │   Jupyter    │─────▶│   MLflow     │              │
-│  │   Lab        │      │   Tracking   │              │
-│  │              │      │   Server     │              │
-│  └──────────────┘      └──────┬───────┘              │
+│  │   Jupyter    │─────▶│ MLflow Proxy │              │
+│  │   Lab        │      │   (nginx)    │              │
+│  │              │      └──────┬───────┘              │
+│  └──────────────┘             │                       │
+│         │                     ▼                       │
+│         │              ┌──────────────┐              │
+│         │              │   MLflow     │              │
+│         │              │   Tracking   │              │
+│         │              │   Server     │              │
+│         │              └──────┬───────┘              │
 │         │                     │                       │
 │         │                     ▼                       │
 │         │              ┌──────────────┐              │
@@ -143,19 +150,33 @@ project2-mlops-pipeline/
 ### MLflow Tracking Server
 
 - **Port**: 5000
+- **Version**: 3.6.0 (with Host header validation)
 - **Backend Store**: PostgreSQL
 - **Artifact Store**: Local filesystem (`/mlflow/artifacts`)
 - **Purpose**: Track experiments, log metrics, store models
+
+### MLflow Proxy
+
+- **Port**: 5001 (external), 80 (internal)
+- **Technology**: Nginx (Alpine)
+- **Purpose**: Proxy requests from Jupyter to MLflow with correct Host header
+- **Configuration**: `mlflow/nginx.conf`
 
 ### Jupyter Lab
 
 - **Port**: 8888
 - **Image**: jupyter/datascience-notebook
+- **User**: `jovyan` (UID 1000) via sudo from root
 - **Purpose**: Interactive model development
+- **Environment**: 
+  - `MLFLOW_TRACKING_URI=http://mlflow-proxy`
+  - `NB_UID=1000`, `NB_GID=100`
+  - `GRANT_SUDO=yes`
 - **Volumes**:
   - `notebooks/` → `/home/jovyan/work`
   - `models/` → `/home/jovyan/models`
   - `data/` → `/home/jovyan/data`
+  - `mlflow_artifacts` → `/mlflow/artifacts` (shared with MLflow)
 
 ### PostgreSQL
 
@@ -237,6 +258,32 @@ docker-compose up -d
 ```
 
 ## Troubleshooting
+
+### MLflow 3.6.0 Host Header Validation
+
+**Issue**: MLflow 3.6.0 has strict Host header validation that rejects requests from Docker containers with "403 Invalid Host header - possible DNS rebinding attack detected"
+
+**Solution**: We use an nginx reverse proxy (`mlflow-proxy`) that:
+- Forwards requests from Jupyter to MLflow
+- Sets the correct `Host: localhost:5000` header
+- Satisfies MLflow's security middleware
+
+**Configuration**:
+- Jupyter uses `MLFLOW_TRACKING_URI=http://mlflow-proxy`
+- Proxy listens on port 5001 (exposed) and port 80 (internal)
+- MLflow only accepts requests with `Host: localhost:5000` header
+
+### Artifact Write Permissions
+
+**Issue**: PermissionError when logging model artifacts
+
+**Solution**: 
+```bash
+# Fix ownership of /mlflow directory
+docker exec mlops-jupyter chown -R jovyan:users /mlflow
+```
+
+The Jupyter kernel runs as `jovyan` user (not root), so the artifact directory must be writable by this user.
 
 ### Port Already in Use
 
