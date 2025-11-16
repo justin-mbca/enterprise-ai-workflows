@@ -58,25 +58,48 @@ else
     exit 1
 fi
 
-# Check Docker (optional)
+# Resolve Docker CLI even if not on PATH (macOS Docker Desktop)
+DOCKER_BIN=""
+COMPOSE_CMD=""
+DOCKER_AVAILABLE=false
+
+# Preferred: docker in PATH
 if command_exists docker; then
-    DOCKER_VERSION=$(docker --version)
-    print_success "Docker found: $DOCKER_VERSION"
-    DOCKER_AVAILABLE=true
-else
-    print_warning "Docker not found. You can still run Projects 1 and 3."
-    print_info "Install Docker Desktop for Project 2: https://www.docker.com/products/docker-desktop/"
-    DOCKER_AVAILABLE=false
+    DOCKER_BIN="$(command -v docker)"
 fi
 
-# Check Docker Compose (optional)
-if command_exists docker-compose; then
-    print_success "Docker Compose found"
-elif command_exists docker && docker compose version >/dev/null 2>&1; then
+# Fallback: Docker Desktop app bundle
+if [ -z "$DOCKER_BIN" ] && [ -x "/Applications/Docker.app/Contents/Resources/bin/docker" ]; then
+    DOCKER_BIN="/Applications/Docker.app/Contents/Resources/bin/docker"
+fi
+
+# Final check and report
+if [ -n "$DOCKER_BIN" ]; then
+    DOCKER_VERSION=$($DOCKER_BIN --version 2>/dev/null || true)
+    if [ -n "$DOCKER_VERSION" ]; then
+        print_success "Docker found: $DOCKER_VERSION"
+        DOCKER_AVAILABLE=true
+    else
+        print_warning "Docker CLI detected at $DOCKER_BIN but not responding"
+    fi
+else
+    print_warning "Docker not found in PATH or Applications. You can still run Projects 1 and 3."
+    print_info "Install/Launch Docker Desktop for Project 2: https://www.docker.com/products/docker-desktop/"
+fi
+
+# Determine Compose command
+if [ "$DOCKER_AVAILABLE" = true ] && $DOCKER_BIN compose version >/dev/null 2>&1; then
     print_success "Docker Compose (plugin) found"
+    COMPOSE_CMD="$DOCKER_BIN compose"
+elif command_exists docker-compose; then
+    print_success "docker-compose found"
+    COMPOSE_CMD="$(command -v docker-compose)"
+elif [ -x "/Applications/Docker.app/Contents/Resources/bin/docker-compose" ]; then
+    print_success "docker-compose (from Docker.app) found"
+    COMPOSE_CMD="/Applications/Docker.app/Contents/Resources/bin/docker-compose"
 else
     if [ "$DOCKER_AVAILABLE" = true ]; then
-        print_warning "Docker Compose not found"
+        print_warning "Docker Compose not found — Project 2 may not start."
     fi
 fi
 
@@ -104,10 +127,12 @@ echo "4) Install all projects"
 echo ""
 echo "5) Show status of running services"
 echo ""
-echo "6) Exit"
+echo "6) Start all projects together"
+echo ""
+echo "7) Exit"
 echo ""
 
-read -p "Enter your choice (1-6): " choice
+read -p "Enter your choice (1-7): " choice
 
 case $choice in
     1)
@@ -159,11 +184,17 @@ case $choice in
         
         cd project2-mlops-pipeline
         
+        if [ -z "$COMPOSE_CMD" ]; then
+            print_error "Docker Compose is required but was not found."
+            print_info "If using Docker Desktop on macOS, try: /Applications/Docker.app/Contents/Resources/bin/docker compose version"
+            exit 1
+        fi
+
         print_info "Pulling Docker images (this may take a while)..."
-        docker-compose pull
+        $COMPOSE_CMD pull
         
         print_info "Starting services..."
-        docker-compose up -d
+        $COMPOSE_CMD up -d
         
         print_success "Project 2 services started!"
         echo ""
@@ -299,7 +330,73 @@ case $choice in
         print_info "Tip: Use './quickstart.sh' again to start a project."
         ;;
 
-    6)
+        6)
+                echo ""
+                print_info "Starting all projects together…"
+                echo ""
+        
+                # 1) Start Project 2 (Docker) if available
+                if [ "$DOCKER_AVAILABLE" = true ] && [ -n "$COMPOSE_CMD" ]; then
+                        (
+                            cd project2-mlops-pipeline && \
+                            print_info "[Project 2] Pulling images…" && $COMPOSE_CMD pull && \
+                            print_info "[Project 2] Starting services…" && $COMPOSE_CMD up -d
+                        ) || print_warning "[Project 2] Could not start Docker services"
+                else
+                        print_warning "[Project 2] Skipped — Docker/Compose not detected"
+                fi
+        
+                # 2) Start Project 1 (Streamlit) in background
+                (
+                    cd project1-rapid-insights && \
+                    print_info "[Project 1] Ensuring virtual environment…" && \
+                    [ -d venv ] || python3 -m venv venv && \
+                    . venv/bin/activate && \
+                    print_info "[Project 1] Installing dependencies (this may take a bit)…" && \
+                    pip install --upgrade pip -q && \
+                    pip install -r requirements.txt -q || \
+                    { print_warning "[Project 1] Requirements install failed — installing core deps"; pip install streamlit pandas numpy plotly textblob -q; } && \
+                    print_info "[Project 1] Launching Streamlit on :8501…" && \
+                    nohup streamlit run app.py --server.port 8501 --server.address 0.0.0.0 > /tmp/project1.log 2>&1 &
+                ) || print_warning "[Project 1] Failed to start"
+        
+                # 3) Start Project 3 (Gradio) in background
+                (
+                    cd project3-document-qa && \
+                    print_info "[Project 3] Ensuring virtual environment…" && \
+                    [ -d venv ] || python3 -m venv venv && \
+                    . venv/bin/activate && \
+                    print_info "[Project 3] Installing dependencies (models may download on first run)…" && \
+                    pip install --upgrade pip -q && \
+                    pip install -r requirements.txt -q && \
+                    print_info "[Project 3] Launching Gradio on :7860…" && \
+                    nohup python app.py > /tmp/project3.log 2>&1 &
+                ) || print_warning "[Project 3] Failed to start"
+        
+                # Show status and open URLs
+                echo ""
+                print_info "Checking status…"
+                print_port_status 8501 "Project 1 (Streamlit)" "http://localhost:8501"
+                print_port_status 7860 "Project 3 (Gradio)" "http://localhost:7860"
+                if [ "$DOCKER_AVAILABLE" = true ]; then
+                        print_port_status 5000 "MLflow UI" "http://localhost:5000"
+                        print_port_status 8888 "Jupyter Lab" "http://localhost:8888"
+                        print_port_status 8000 "Model API (FastAPI)" "http://localhost:8000/docs"
+                fi
+        
+                if command_exists open; then
+                        open http://localhost:8501 >/dev/null 2>&1 || true
+                        open http://localhost:7860 >/dev/null 2>&1 || true
+                        [ "$DOCKER_AVAILABLE" = true ] && open http://localhost:5000 >/dev/null 2>&1 || true
+                        [ "$DOCKER_AVAILABLE" = true ] && open http://localhost:8888 >/dev/null 2>&1 || true
+                        [ "$DOCKER_AVAILABLE" = true ] && open http://localhost:8000/docs >/dev/null 2>&1 || true
+                fi
+        
+                echo ""
+                print_info "Logs: /tmp/project1.log, /tmp/project3.log (Docker logs via: $COMPOSE_CMD logs -f)"
+                ;;
+
+        7)
         echo ""
         print_info "Exiting. Visit the docs/ folder for detailed setup instructions."
         exit 0
