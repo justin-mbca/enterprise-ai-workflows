@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+*.log
+*.sqlite
+*.db
+
+# MLflow
+mlruns/
+mlflow_artifacts/
+
+# Model files (can be large)
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
+
+# Data files (can be large)
+*.csv
+*.parquet
+*.json
+data/
+*.zip
+*.tar.gz
+
+# Docker volumes
+postgres_data/
+mlflow_artifacts/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Environment variables
+.env
+.env.local
+
+# Generated files
+confusion_matrix_*.png
+feature_importance_*.png
+eda_churn_analysis.png
+model_comparison.png

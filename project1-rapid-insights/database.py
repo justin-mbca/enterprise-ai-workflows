@@ -1,0 +1,297 @@
+"""
+Database Manager with AI Functions
+Simulates SQL-based AI operations similar to Snowflake Cortex
+"""
+
+import sqlite3
+import pandas as pd
+import numpy as np
+from textblob import TextBlob
+from datetime import datetime, timedelta
+from typing import Dict, Any, List
+import re
+
+
+class DatabaseManager:
+    """
+    Manages SQLite database with custom AI functions
+    Simulates Snowflake Cortex AI capabilities
+    """
+    
+    def __init__(self, db_path: str = ":memory:"):
+        """Initialize database connection and create sample data"""
+        self.conn = sqlite3.connect(db_path, check_same_thread=False)
+        self.setup_database()
+        self.register_ai_functions()
+    
+    def setup_database(self):
+        """Create sample tables and data"""
+        cursor = self.conn.cursor()
+        
+        # Create sample tables
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS customer_feedback (
+                id INTEGER PRIMARY KEY,
+                customer_id INTEGER,
+                text TEXT,
+                created_at TIMESTAMP,
+                category TEXT
+            )
+        """)
+        
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS documents (
+                id INTEGER PRIMARY KEY,
+                title TEXT,
+                original_text TEXT,
+                created_at TIMESTAMP
+            )
+        """)
+        
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS sample_data (
+                id INTEGER PRIMARY KEY,
+                category TEXT,
+                value REAL,
+                created_at TIMESTAMP
+            )
+        """)
+        
+        # Insert sample data if tables are empty
+        cursor.execute("SELECT COUNT(*) FROM customer_feedback")
+        if cursor.fetchone()[0] == 0:
+            self._insert_sample_data()
+        
+        self.conn.commit()
+    
+    def _insert_sample_data(self):
+        """Insert sample data for testing"""
+        cursor = self.conn.cursor()
+        
+        # Sample customer feedback
+        feedback_samples = [
+            (1, "Absolutely love this product! Best purchase ever.", "product"),
+            (2, "Terrible experience. Would not recommend.", "service"),
+            (3, "It's okay, nothing special.", "product"),
+            (4, "Amazing customer service! They helped me immediately.", "service"),
+            (5, "Poor quality, not worth the price.", "product"),
+            (6, "Exceeded my expectations! Very happy with this.", "product"),
+            (7, "Average product, decent price point.", "product"),
+            (8, "Customer support was unhelpful and rude.", "service"),
+            (9, "Great value for money! Highly recommend.", "product"),
+            (10, "Delivery was late but product is good.", "logistics")
+        ]
+        
+        for i, text, category in feedback_samples:
+            cursor.execute("""
+                INSERT INTO customer_feedback (customer_id, text, created_at, category)
+                VALUES (?, ?, ?, ?)
+            """, (i, text, datetime.now(), category))
+        
+        # Sample documents
+        doc_samples = [
+            ("Q1 Report", "The first quarter showed strong growth across all segments. Revenue increased by 23% year over year. Customer acquisition costs decreased by 15%. Product development team launched three new features. Marketing campaigns exceeded ROI targets by 18%."),
+            ("Customer Survey", "Customers indicated high satisfaction with product quality. Main concerns were shipping times and customer support response rates. 85% would recommend to others. Feature requests focused on mobile app improvements and integration capabilities."),
+            ("Technical Analysis", "System performance metrics show 99.9% uptime. Response times averaged 120ms. Database queries optimized resulting in 40% faster load times. Security audit passed with zero critical issues. Infrastructure scaling handled peak loads effectively.")
+        ]
+        
+        for title, text in doc_samples:
+            cursor.execute("""
+                INSERT INTO documents (title, original_text, created_at)
+                VALUES (?, ?, ?)
+            """, (title, text, datetime.now()))
+        
+        # Sample analytics data
+        categories = ['Electronics', 'Clothing', 'Food', 'Books', 'Toys']
+        for i in range(50):
+            cursor.execute("""
+                INSERT INTO sample_data (category, value, created_at)
+                VALUES (?, ?, ?)
+            """, (
+                np.random.choice(categories),
+                np.random.uniform(10, 1000),
+                datetime.now() - timedelta(days=np.random.randint(0, 30))
+            ))
+        
+        self.conn.commit()
+    
+    def register_ai_functions(self):
+        """Register custom AI functions for SQL"""
+        
+        def sentiment_analysis_udf(text: str) -> float:
+            """Calculate sentiment score for text"""
+            if not text:
+                return 0.0
+            blob = TextBlob(str(text))
+            return float(blob.sentiment.polarity)
+        
+        def summarize_text_udf(text: str, num_sentences: int = 2) -> str:
+            """Summarize text to specified number of sentences"""
+            if not text:
+                return ""
+            
+            # Simple extractive summarization
+            sentences = re.split(r'[.!?]+', str(text))
+            sentences = [s.strip() for s in sentences if s.strip()]
+            
+            # Take first N sentences as summary
+            num_sentences = min(num_sentences, len(sentences))
+            return '. '.join(sentences[:num_sentences]) + '.'
+        
+        # Register functions
+        self.conn.create_function("sentiment_analysis", 1, sentiment_analysis_udf)
+        self.conn.create_function("summarize_text", 2, summarize_text_udf)
+    
+    def analyze_sentiment(self, text: str) -> Dict[str, Any]:
+        """
+        Analyze sentiment of text
+        Simulates: Snowflake SENTIMENT() function
+        """
+        blob = TextBlob(text)
+        
+        return {
+            'text': text,
+            'sentiment': float(blob.sentiment.polarity),
+            'subjectivity': float(blob.sentiment.subjectivity),
+            'label': 'positive' if blob.sentiment.polarity > 0.1 else 
+                    'negative' if blob.sentiment.polarity < -0.1 else 'neutral'
+        }
+    
+    def forecast_timeseries(self, df: pd.DataFrame, periods: int = 30) -> pd.DataFrame:
+        """
+        Forecast time series data
+        Simulates: Snowflake ML_FORECAST() function
+        
+        Args:
+            df: DataFrame with 'date' and 'value' columns
+            periods: Number of periods to forecast
+        
+        Returns:
+            DataFrame with forecast results
+        """
+        try:
+            from prophet import Prophet
+            
+            # Prepare data for Prophet
+            prophet_df = df.copy()
+            prophet_df.columns = ['ds', 'y']
+            
+            # Fit model
+            model = Prophet(
+                daily_seasonality=True,
+                yearly_seasonality=False,
+                weekly_seasonality=True
+            )
+            model.fit(prophet_df)
+            
+            # Make forecast
+            future = model.make_future_dataframe(periods=periods)
+            forecast = model.predict(future)
+            
+            # Return only forecast period
+            forecast_df = forecast.tail(periods)[['ds', 'yhat', 'yhat_lower', 'yhat_upper']]
+            forecast_df.columns = ['date', 'forecast', 'lower_bound', 'upper_bound']
+            
+            return forecast_df.reset_index(drop=True)
+            
+        except ImportError:
+            # Fallback to simple linear regression if Prophet not installed
+            return self._simple_forecast(df, periods)
+    
+    def _simple_forecast(self, df: pd.DataFrame, periods: int) -> pd.DataFrame:
+        """Simple linear forecast fallback"""
+        # Calculate linear trend
+        X = np.arange(len(df)).reshape(-1, 1)
+        y = df['value'].values
+        
+        # Simple linear regression
+        X_mean = X.mean()
+        y_mean = y.mean()
+        
+        numerator = ((X - X_mean) * (y - y_mean)).sum()
+        denominator = ((X - X_mean) ** 2).sum()
+        slope = numerator / denominator
+        intercept = y_mean - slope * X_mean
+        
+        # Generate forecast
+        last_date = df['date'].iloc[-1]
+        forecast_dates = pd.date_range(
+            start=last_date + timedelta(days=1),
+            periods=periods,
+            freq='D'
+        )
+        
+        forecast_X = np.arange(len(df), len(df) + periods).reshape(-1, 1)
+        forecast_y = slope * forecast_X + intercept
+        
+        # Simple confidence interval (±10%)
+        std_dev = y.std()
+        
+        return pd.DataFrame({
+            'date': forecast_dates,
+            'forecast': forecast_y.flatten(),
+            'lower_bound': forecast_y.flatten() - 1.96 * std_dev,
+            'upper_bound': forecast_y.flatten() + 1.96 * std_dev
+        })
+    
+    def execute_sql(self, query: str) -> pd.DataFrame:
+        """
+        Execute SQL query and return results as DataFrame
+        
+        Args:
+            query: SQL query string
+        
+        Returns:
+            DataFrame with query results
+        """
+        return pd.read_sql_query(query, self.conn)
+    
+    def close(self):
+        """Close database connection"""
+        self.conn.close()
+    
+    def __del__(self):
+        """Cleanup on deletion"""
+        try:
+            self.close()
+        except:
+            pass
+
+
+# Example usage for testing
+if __name__ == "__main__":
+    # Initialize database
+    db = DatabaseManager()
+    
+    # Test sentiment analysis
+    print("=== Sentiment Analysis Test ===")
+    result = db.analyze_sentiment("This product is absolutely amazing!")
+    print(f"Sentiment: {result['sentiment']:.3f} ({result['label']})")
+    
+    # Test SQL with AI functions
+    print("\n=== SQL with AI Functions Test ===")
+    query = """
+        SELECT 
+            text,
+            sentiment_analysis(text) as sentiment_score,
+            CASE 
+                WHEN sentiment_analysis(text) > 0.1 THEN 'Positive'
+                WHEN sentiment_analysis(text) < -0.1 THEN 'Negative'
+                ELSE 'Neutral'
+            END as sentiment_label
+        FROM customer_feedback
+        LIMIT 5
+    """
+    results = db.execute_sql(query)
+    print(results)
+    
+    # Test forecasting
+    print("\n=== Forecasting Test ===")
+    dates = pd.date_range(end=datetime.now(), periods=90, freq='D')
+    values = 100 + 2 * np.arange(90) + 20 * np.sin(2 * np.pi * np.arange(90) / 30)
+    test_df = pd.DataFrame({'date': dates, 'value': values})
+    
+    forecast = db.forecast_timeseries(test_df, periods=14)
+    print(forecast.head())
+    
+    print("\n✅ All tests completed successfully!")

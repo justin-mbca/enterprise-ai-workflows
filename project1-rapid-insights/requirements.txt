@@ -1,0 +1,22 @@
+# Project 1: Rapid Insights Workflow
+# Simulates Snowflake Cortex AI capabilities
+
+# Web Framework
+streamlit==1.29.0
+
+# Data Processing
+pandas==2.1.4
+numpy==1.26.2
+
+# Visualization
+plotly==5.18.0
+
+# NLP & AI
+textblob==0.17.1
+prophet==1.1.5
+
+# Database
+# sqlite3 is included in Python standard library
+
+# Additional utilities
+pytz==2023.3

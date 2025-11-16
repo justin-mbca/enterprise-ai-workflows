@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:13-alpine
+    container_name: mlops-postgres
+    environment:
+      POSTGRES_DB: mlops_db
+      POSTGRES_USER: mlops_user
+      POSTGRES_PASSWORD: mlops_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mlops-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mlops_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MLflow Tracking Server
+  mlflow:
+    image: python:3.10-slim
+    container_name: mlops-mlflow
+    working_dir: /mlflow
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=postgresql://mlops_user:mlops_password@postgres:5432/mlops_db
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=/mlflow/artifacts
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_artifacts:/mlflow/artifacts
+      - ./mlflow:/mlflow
+    networks:
+      - mlops-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "pip install mlflow psycopg2-binary && 
+             mlflow server 
+             --backend-store-uri postgresql://mlops_user:mlops_password@postgres:5432/mlops_db 
+             --default-artifact-root /mlflow/artifacts 
+             --host 0.0.0.0 
+             --port 5000"
+
+  # Jupyter Lab for Experiments
+  jupyter:
+    image: jupyter/datascience-notebook:latest
+    container_name: mlops-jupyter
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/work
+      - ./models:/home/jovyan/models
+      - ./data:/home/jovyan/data
+    networks:
+      - mlops-network
+    depends_on:
+      - mlflow
+    command: start-notebook.sh --NotebookApp.token='' --NotebookApp.password=''
+
+  # Model Deployment API (FastAPI)
+  model-api:
+    build:
+      context: ./deployment
+      dockerfile: Dockerfile
+    container_name: mlops-api
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - MODEL_NAME=customer_churn_model
+      - MODEL_STAGE=Production
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./deployment:/app
+      - mlflow_artifacts:/mlflow/artifacts
+    networks:
+      - mlops-network
+    depends_on:
+      - mlflow
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+networks:
+  mlops-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  mlflow_artifacts:
