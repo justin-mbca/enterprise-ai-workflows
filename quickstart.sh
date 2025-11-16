@@ -33,6 +33,18 @@ print_warning() {
     echo "⚠️  $1"
 }
 
+# Helper: Check if a TCP port is listening and print a friendly status line
+print_port_status() {
+    local port=$1
+    local label=$2
+    local url=$3
+    if command_exists lsof && lsof -nP -i :"$port" >/dev/null 2>&1; then
+        print_success "$label is RUNNING → $url"
+    else
+        print_warning "$label is NOT running"
+    fi
+}
+
 # Check prerequisites
 echo "Checking prerequisites..."
 echo ""
@@ -90,10 +102,12 @@ echo "   └─ Requires: Python only"
 echo ""
 echo "4) Install all projects"
 echo ""
-echo "5) Exit"
+echo "5) Show status of running services"
+echo ""
+echo "6) Exit"
 echo ""
 
-read -p "Enter your choice (1-5): " choice
+read -p "Enter your choice (1-6): " choice
 
 case $choice in
     1)
@@ -256,8 +270,36 @@ case $choice in
         echo "  cd project3-document-qa && python app.py"
         echo ""
         ;;
-        
+
     5)
+        echo ""
+        print_info "Checking service status..."
+        echo ""
+        # Project 1 - Streamlit
+        print_port_status 8501 "Project 1 (Streamlit)" "http://localhost:8501"
+        
+        # Project 3 - Gradio
+        print_port_status 7860 "Project 3 (Gradio)" "http://localhost:7860"
+        
+        # Project 2 - Docker services
+        if [ "$DOCKER_AVAILABLE" = true ]; then
+            print_port_status 5000 "MLflow UI" "http://localhost:5000"
+            print_port_status 8888 "Jupyter Lab" "http://localhost:8888"
+            print_port_status 8000 "Model API (FastAPI)" "http://localhost:8000/docs"
+            echo ""
+            print_info "Docker containers (if any):"
+            # Prefer docker compose plugin if available
+            if command_exists docker; then
+                docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" || true
+            fi
+        else
+            print_warning "Docker not available → Project 2 cannot run yet"
+        fi
+        echo ""
+        print_info "Tip: Use './quickstart.sh' again to start a project."
+        ;;
+
+    6)
         echo ""
         print_info "Exiting. Visit the docs/ folder for detailed setup instructions."
         exit 0
