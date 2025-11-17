@@ -15,6 +15,8 @@ python app.py
 # Then open http://localhost:7860
 ```
 
+Live app: https://huggingface.co/spaces/zhangju2023/document-qa-rag
+
 ## Deploy to Hugging Face Spaces
 
 Option A — Create a new Space and upload:

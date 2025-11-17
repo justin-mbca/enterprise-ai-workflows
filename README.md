@@ -124,6 +124,8 @@ python app.py
 # Access at http://localhost:7860
 ```
 
+Live app: https://huggingface.co/spaces/zhangju2023/document-qa-rag
+
 ## 💰 Cost Breakdown
 
 | Component | Enterprise Tool | Free Alternative | Savings |
