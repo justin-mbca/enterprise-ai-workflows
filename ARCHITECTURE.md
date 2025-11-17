@@ -2,7 +2,12 @@
 
 This document compares the **enterprise-grade architecture** used in production environments versus our **open-source implementation** for learning and demonstration purposes.
 
----
+## 📊 Quick Navigation
+
+- **[ARCHITECTURE-ENTERPRISE.md](./ARCHITECTURE-ENTERPRISE.md)** - Beautiful diagram of enterprise tools (Azure ML, Snowflake, Dataiku, etc.)
+- **[ARCHITECTURE-OPENSOURCE.md](./ARCHITECTURE-OPENSOURCE.md)** - Beautiful diagram of our open-source stack (MLflow, PostgreSQL, etc.)
+- **This document** - Detailed workflow comparisons and technical deep-dive
+
 
 ## 🏢 Enterprise Architecture (Industry Standard)
 
