@@ -34,9 +34,13 @@ for i in {1..60}; do
 done
 
 ## Optionally seed MLflow with a demo model and promote to Production
+echo "SEED_MLFLOW env var is: ${SEED_MLFLOW:-false}"
 if [ "${SEED_MLFLOW:-false}" = "true" ]; then
   echo "Seeding MLflow with demo model..."
-  python /app/repo/project2-mlops-pipeline/hf-space/seed_mlflow.py || true
+  python /app/repo/project2-mlops-pipeline/hf-space/seed_mlflow.py 2>&1 | tee /tmp/seed.log || echo "Seeding failed (non-fatal)"
+  cat /tmp/seed.log
+else
+  echo "Skipping MLflow seeding (SEED_MLFLOW not set to true)"
 fi
 
 # Start FastAPI (demo mode - works without trained model)
