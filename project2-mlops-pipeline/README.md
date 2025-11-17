@@ -56,6 +56,21 @@ Note about Codespaces URLs:
 Start/Resume the Codespace directly (quickstart):
 https://codespaces.new/justin-mbca/enterprise-ai-workflows?quickstart=1
 
+## Deploy on Hugging Face Spaces (Docker)
+
+Want a single public URL without running a Codespace? Use a Docker Space to expose both MLflow and the API behind Nginx path routing.
+
+Steps:
+1. Open `project2-mlops-pipeline/hf-space/`
+2. Create a new Space at https://huggingface.co/spaces → Type: Docker → CPU Basic (free)
+3. Upload the three files from `hf-space/`: `Dockerfile`, `nginx.conf.template`, `start.sh`
+4. Wait for the build to finish
+5. Open:
+  - MLflow UI: https://<your-space>/mlflow
+  - API docs: https://<your-space>/api/docs
+
+Note: Storage is ephemeral on free Spaces. This is intended as a demo, not a persistent MLflow registry.
+
 ## Accessing Services
 
 - **MLflow UI**: http://localhost:5000
