@@ -1,6 +1,6 @@
 # Project 2: Run in GitHub Codespaces (Free-tier friendly)
 
-This guide shows how to run the full MLOps stack (Docker Compose) in GitHub Codespaces using a Dev Container that includes Docker-in-Docker.
+This guide shows how to run the MLOps stack in GitHub Codespaces. If Docker Compose fails (recovery mode), use the no-Docker fallback script.
 
 ## Quickstart
 
@@ -10,28 +10,32 @@ This guide shows how to run the full MLOps stack (Docker Compose) in GitHub Code
 
 2. Wait for the dev container to build (~1–3 minutes). It includes Docker-in-Docker.
 
-3. Start the stack:
-
+3. If Docker is healthy:
 ```bash
 cd project2-mlops-pipeline
 docker compose up -d
 ```
+Make ports public: 5000, 5001, 8000, 8888
 
-4. Make ports public (if prompted or via Ports panel): 5000, 5001, 8000, 8888
+4. If you are in recovery mode / Docker errors, use fallback (no Docker, SQLite backend):
+```bash
+bash project2-mlops-pipeline/scripts/start-mlops-nodocker.sh
+```
 
 5. Open the forwarded URLs:
-- MLflow: MLflow (port 5000)
-- Proxy: MLflow Proxy (port 5001)
-- Jupyter: Jupyter (port 8888)
-- API docs: Model API (port 8000)
+- MLflow: port 5000
+- (No proxy needed in fallback)
+- Jupyter: port 8888
+- API docs: port 8000
 
 Notes:
-- The devcontainer exposes ports as public by default, but you may still need to confirm in the Ports panel.
-- If artifacts fail to log from Jupyter, ensure `/mlflow` is writable by the `jovyan` user:
+- Ports may need manual Public toggle in the Ports panel.
+- Docker mode: fix artifact perms if needed:
   ```bash
   docker exec mlops-jupyter chown -R jovyan:users /mlflow
   ```
-- Codespaces resources are limited; this stack is light but avoid heavy training jobs.
+- Fallback mode: artifacts stored locally under `mlruns/` (no permission tweak required).
+- Keep training light; Codespaces has limited CPU/RAM.
 
 ## Cleanup
 
@@ -58,9 +62,7 @@ If you see “This codespace is currently running in recovery mode…”
   ```bash
   for i in {1..60}; do docker info >/dev/null 2>&1 && echo "Docker ready" && break; sleep 2; done
   ```
-4. If the error persists, ensure your devcontainer uses:
-  - `ghcr.io/devcontainers/features/docker-in-docker:2` with `moby: true`
-  - `overrideCommand: false`, `init: true`
-  - Mount for `/var/lib/docker` as a volume
-
-This repository’s `.devcontainer/devcontainer.json` is configured accordingly.
+4. If the error persists, switch to fallback permanently (current devcontainer now uses Python image without Docker feature). Skip Compose and use the script:
+```bash
+bash project2-mlops-pipeline/scripts/start-mlops-nodocker.sh
+```

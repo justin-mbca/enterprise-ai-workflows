@@ -1,20 +1,10 @@
 {
   "name": "enterprise-ai-workflows",
-  "image": "mcr.microsoft.com/devcontainers/base:jammy",
-  "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "moby": true
-    }
-  },
-  "overrideCommand": false,
-  "init": true,
-  "mounts": [
-    "source=devcontainer-docker-lib,target=/var/lib/docker,type=volume"
-  ],
-  "forwardPorts": [5000, 5001, 8000, 8888],
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "features": {},
+  "forwardPorts": [5000, 8000, 8888],
   "portsAttributes": {
     "5000": { "label": "MLflow", "protocol": "http", "visibility": "public" },
-    "5001": { "label": "MLflow Proxy", "protocol": "http", "visibility": "public" },
     "8000": { "label": "Model API", "protocol": "http", "visibility": "public" },
     "8888": { "label": "Jupyter", "protocol": "http", "visibility": "public" }
   },
@@ -27,7 +17,7 @@
       ]
     }
   },
-  "onCreateCommand": "docker version || true",
-  "postCreateCommand": "echo 'Run: cd project2-mlops-pipeline && docker compose up -d'",
+  "onCreateCommand": "pip install --no-cache-dir mlflow jupyter fastapi uvicorn[standard] pandas numpy scikit-learn pydantic requests",
+  "postCreateCommand": "echo 'Run: bash project2-mlops-pipeline/scripts/start-mlops-nodocker.sh'",
   "remoteUser": "vscode"
 }
