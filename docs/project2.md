@@ -9,10 +9,21 @@ This project simulates an enterprise MLOps platform with experiment tracking, a 
 ## View the app
 
 Live demo (Hugging Face Space):
-- MLflow UI: https://zhangju2023-mlops-pipeline-demo.hf.space/mlflow/
-- API docs: https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs
- - Health: https://zhangju2023-mlops-pipeline-demo.hf.space/api/health
- - Example prediction: https://zhangju2023-mlops-pipeline-demo.hf.space/api/predict/example
+
+<p>
+  <a href="https://zhangju2023-mlops-pipeline-demo.hf.space/mlflow/">
+    <img alt="MLflow UI" src="https://img.shields.io/badge/MLflow%20UI-0194E2">
+  </a>
+  <a href="https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs">
+    <img alt="API Docs" src="https://img.shields.io/badge/API%20Docs-009688?logo=fastapi&logoColor=white">
+  </a>
+  <a href="https://zhangju2023-mlops-pipeline-demo.hf.space/api/health">
+    <img alt="Health" src="https://img.shields.io/badge/Health-4caf50">
+  </a>
+  <a href="https://zhangju2023-mlops-pipeline-demo.hf.space/api/predict/example">
+    <img alt="Example" src="https://img.shields.io/badge/Example%20Prediction-7c4dff">
+  </a>
+</p>
 
 One-click environment (GitHub Codespaces):
 - https://codespaces.new/justin-mbca/enterprise-ai-workflows?quickstart=1
