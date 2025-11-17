@@ -6,6 +6,8 @@ This diagram shows **Enterprise vs Open-Source** AI architectures in a direct vi
 graph TB
     %% ========== TITLE ==========
     title[Enterprise vs Open-Source AI Architecture Comparison<br/>Same Patterns, Different Tools, $54K+ Annual Savings]
+    %% Position the title at the top and hide its box
+    style title fill:transparent,stroke:transparent
     
     
     
@@ -60,18 +62,11 @@ graph TB
         end
     end
     
-    %% ========== OUTCOMES ==========
-    subgraph outcomes[Business & Career Outcomes]
-        direction LR
-        OUT1[Enterprise:<br/>Real-time Apps,<br/>BI Dashboards,<br/>Process Automation]
-        OUT2[Open-Source:<br/>Portfolio Projects,<br/>Demo Apps,<br/>Job Readiness]
-    end
-    
     %% ========== FLOW CONNECTIONS ==========
     
+    title --> layer1
     layer1 --> layer2
     layer2 --> layer3
-    layer3 --> outcomes
     
     %% ========== PATTERN MAPPING ==========
     E1A -.-> O1A
