@@ -31,5 +31,26 @@ nohup python -m uvicorn main_demo:app \
   --root-path /api \
   >/tmp/api.log 2>&1 &
 
+# Wait for upstream services to be ready before starting Nginx
+echo "Waiting for MLflow on 127.0.0.1:5000..."
+for i in {1..60}; do
+  if bash -c 'exec 3<>/dev/tcp/127.0.0.1/5000' 2>/dev/null; then
+    exec 3>&- 3<&-
+    echo "MLflow is up."
+    break
+  fi
+  sleep 1
+done
+
+echo "Waiting for FastAPI on 127.0.0.1:8000..."
+for i in {1..60}; do
+  if bash -c 'exec 3<>/dev/tcp/127.0.0.1/8000' 2>/dev/null; then
+    exec 3>&- 3<&-
+    echo "FastAPI is up."
+    break
+  fi
+  sleep 1
+done
+
 # Start Nginx in foreground
 nginx -g 'daemon off;'
