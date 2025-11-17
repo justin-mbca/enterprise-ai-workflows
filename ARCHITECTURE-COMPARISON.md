@@ -81,17 +81,17 @@ graph TB
     layer3 --> outcomes
     
     %% ========== PATTERN MAPPING ==========
-    E1A -.Same Storage<br/>Patterns.-> O1A
-    E1B -.Same Analytics<br/>Patterns.-> O1B
-    E1C -.Same Lakehouse<br/>Patterns.-> O1C
+    E1A -.-> O1A
+    E1B -.-> O1B
+    E1C -.-> O1C
     
-    E2A -.Same MLOps<br/>Lifecycle.-> O2A
-    E2B -.Same SQL-based<br/>AI.-> O2B
-    E2C -.Same LLM<br/>Integration.-> O2C
-    E2D -.Same AutoML<br/>Workflows.-> O2D
+    E2A -.-> O2A
+    E2B -.-> O2B
+    E2C -.-> O2C
+    E2D -.-> O2D
     
-    E3A -.Same Collaborative<br/>Workflows.-> O3A
-    E3B -.Same Research<br/>Platform.-> O3B
+    E3A -.-> O3A
+    E3B -.-> O3B
     
     %% ========== STYLING ==========
     classDef enterprise fill:#fff3e0,stroke:#e65100,stroke-width:3px,color:#000
