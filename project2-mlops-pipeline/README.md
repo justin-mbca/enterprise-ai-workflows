@@ -43,7 +43,7 @@ Make ports 5000, 5001, 8000, 8888 public in the Ports panel. See details in `REA
 **Live Codespaces deployment:**
 - MLflow UI: https://glorious-rotary-phone-g64w6j547wcwjpq-5000.app.github.dev
 - Model API: https://glorious-rotary-phone-g64w6j547wcwjpq-8000.app.github.dev/docs
-- Jupyter Lab: https://glorious-rotary-phone-g64w6j547wcwjpq-8888.app.github.dev
+- Jupyter Notebook: https://glorious-rotary-phone-g64w6j547wcwjpq-8888.app.github.dev/lab/tree/notebooks/01_customer_churn_mlops.ipynb
 
 ## Accessing Services
 
