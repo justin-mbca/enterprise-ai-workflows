@@ -7,7 +7,8 @@ ENV PYTHONUNBUFFERED=1 \
     MODEL_NAME=customer_churn_model \
     MODEL_STAGE=Production \
     MLFLOW_BACKEND_URI=sqlite:////data/mlflow.db \
-    MLFLOW_ARTIFACT_ROOT=/data/artifacts
+    MLFLOW_ARTIFACT_ROOT=/data/artifacts \
+    SEED_MLFLOW=true
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends nginx git build-essential gettext-base && \
