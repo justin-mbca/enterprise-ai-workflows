@@ -105,13 +105,23 @@ docker-compose up -d
 ```
 
 **Live deployments:**
+
+Hugging Face Space (persistent demo):
+- MLflow UI: https://zhangju2023-mlops-pipeline-demo.hf.space/mlflow/
+- Model API: https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs
+ - Health: https://zhangju2023-mlops-pipeline-demo.hf.space/api/health
+ - Example prediction: https://zhangju2023-mlops-pipeline-demo.hf.space/api/predict/example
+
+ Notes:
+ - Runs in demo mode by default (no external model required)
+ - MLflow is auto-seeded with a demo model (customer_churn_model → Production)
+
+GitHub Codespaces (temporary):
 - MLflow UI: https://glorious-rotary-phone-g64w6j547wcwjpq-5000.app.github.dev
 - Model API: https://glorious-rotary-phone-g64w6j547wcwjpq-8000.app.github.dev/docs
 - Jupyter Notebook: https://glorious-rotary-phone-g64w6j547wcwjpq-8888.app.github.dev/lab/tree/notebooks/01_customer_churn_mlops.ipynb
   
-    Note: These are GitHub Codespaces demo URLs. They are only reachable while that Codespace is running. After the Codespace auto-sleeps, click Resume in the Codespaces UI and restart services:
-  
-    ```bash
+  Note: Codespaces URLs are temporary and only reachable while that Codespace is running. After the Codespace auto-sleeps, click Resume in the Codespaces UI and restart services:    ```bash
     bash project2-mlops-pipeline/scripts/start-mlops-nodocker.sh
     ```
   

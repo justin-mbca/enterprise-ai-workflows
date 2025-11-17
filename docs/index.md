@@ -13,8 +13,11 @@ Showcase of three production-inspired projects you can run for free.
    - Code: https://github.com/justin-mbca/enterprise-ai-workflows/tree/main/project1-rapid-insights
 
 2. MLOps Pipeline (MLflow + FastAPI)
+   - Live demo (HF Space):
+     - MLflow UI: https://zhangju2023-mlops-pipeline-demo.hf.space/mlflow/
+     - API docs: https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs
+     - Health: https://zhangju2023-mlops-pipeline-demo.hf.space/api/health
    - One-click environment (Codespaces): https://codespaces.new/justin-mbca/enterprise-ai-workflows?quickstart=1
-   - Deploy on Hugging Face Spaces (single URL for MLflow + API): see instructions
    - Code: https://github.com/justin-mbca/enterprise-ai-workflows/tree/main/project2-mlops-pipeline
    - Guide: /project2.html
 
