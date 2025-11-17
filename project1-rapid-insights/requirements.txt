@@ -13,7 +13,6 @@ plotly==5.18.0
 
 # NLP & AI
 textblob==0.17.1
-prophet==1.1.5
 
 # Database
 # sqlite3 is included in Python standard library
