@@ -1,5 +1,7 @@
 # Project 3: Document Q&A (Gradio / Hugging Face Spaces)
 
+[![Open in Hugging Face Spaces](https://img.shields.io/badge/Spaces-Open%20App-blue?logo=huggingface)](https://huggingface.co/spaces/zhangju2023/document-qa-rag)
+
 A RAG (Retrieval-Augmented Generation) application using:
 - ChromaDB for vector storage
 - SentenceTransformers for embeddings (`all-MiniLM-L6-v2`)

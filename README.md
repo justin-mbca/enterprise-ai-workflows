@@ -119,6 +119,10 @@ docker-compose up -d
 
      Start/Resume the demo (opens a Codespace):
      https://codespaces.new/justin-mbca/enterprise-ai-workflows?quickstart=1
+### Project 3: Document Q&A System
+
+[![Open in Hugging Face Spaces](https://img.shields.io/badge/Spaces-Open%20App-blue?logo=huggingface)](https://huggingface.co/spaces/zhangju2023/document-qa-rag)
+
 **Simulates:** Azure OpenAI RAG  
 **Tech Stack:** ChromaDB, SentenceTransformers, Hugging Face Transformers  
 **Features:**
