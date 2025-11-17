@@ -53,6 +53,9 @@ Note about Codespaces URLs:
   ```
 - If you delete the Codespace, the URLs stop working. Use the quickstart link to create a fresh Codespace.
 
+Start/Resume the Codespace directly (quickstart):
+https://codespaces.new/justin-mbca/enterprise-ai-workflows?quickstart=1
+
 ## Accessing Services
 
 - **MLflow UI**: http://localhost:5000

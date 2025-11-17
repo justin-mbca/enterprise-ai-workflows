@@ -116,6 +116,9 @@ docker-compose up -d
     ```
   
     If the Codespace is deleted, these URLs will no longer work; open a new Codespace from the quickstart link to spin up a fresh demo.
+
+     Start/Resume the demo (opens a Codespace):
+     https://codespaces.new/justin-mbca/enterprise-ai-workflows?quickstart=1
 **Simulates:** Azure OpenAI RAG  
 **Tech Stack:** ChromaDB, SentenceTransformers, Hugging Face Transformers  
 **Features:**
