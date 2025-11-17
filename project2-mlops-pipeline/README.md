@@ -19,6 +19,14 @@ docker-compose ps
 docker-compose logs -f
 ```
 
+## Cloud Deployment (VM)
+
+Want to run this stack on a cloud VM (Azure/AWS/GCP) with a single command? See the Cloud Guide:
+
+- Cloud guide: ./README-CLOUD.md
+
+This includes a one-liner to install Docker, clone this repo, open firewall ports, and start the stack.
+
 ## Accessing Services
 
 - **MLflow UI**: http://localhost:5000
