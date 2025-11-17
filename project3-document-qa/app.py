@@ -7,9 +7,7 @@ import gradio as gr
 import chromadb
 from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
-from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
-import pandas as pd
-import numpy as np
+from transformers import pipeline, AutoTokenizer
 from typing import List, Dict, Tuple
 import os
 from datetime import datetime
@@ -37,7 +35,7 @@ class DocumentQASystem:
         logger.info("🔄 Initializing Document Q&A System...")
         
         # Initialize embedding model
-        logger.info(f"Loading embedding model: {embedding_model_name}")
+        logger.info("Loading embedding model: %s", embedding_model_name)
         self.embedding_model = SentenceTransformer(embedding_model_name)
         
         # Initialize ChromaDB
@@ -53,11 +51,11 @@ class DocumentQASystem:
                 name=collection_name,
                 metadata={"description": "Document knowledge base"}
             )
-        except:
+        except Exception:
             self.collection = self.chroma_client.get_collection(name=collection_name)
         
         # Initialize LLM
-        logger.info(f"Loading language model: {llm_model_name}")
+        logger.info("Loading language model: %s", llm_model_name)
         self.tokenizer = AutoTokenizer.from_pretrained(llm_model_name)
         self.llm = pipeline(
             "text-generation",
@@ -71,24 +69,30 @@ class DocumentQASystem:
         
         logger.info("✅ System initialized successfully")
     
-    def add_documents(self, documents: List[str], metadata: List[Dict] = None):
+    def add_documents(self, documents: List[str], metadata: List[Dict] = None, ids: List[str] = None):
         """
         Add documents to the knowledge base
         
         Args:
             documents: List of document texts
             metadata: Optional metadata for each document
+            ids: Optional list of IDs to use; if not provided, auto-generate
         """
         if not documents:
             return
         
-        logger.info(f"🔄 Adding {len(documents)} documents to knowledge base...")
+        logger.info("🔄 Adding %d documents to knowledge base...", len(documents))
         
         # Generate embeddings
         embeddings = self.embedding_model.encode(documents).tolist()
         
         # Generate IDs
-        ids = [f"doc_{i}_{datetime.now().timestamp()}" for i in range(len(documents))]
+        if ids is None:
+            ids = [f"doc_{i}_{datetime.now().timestamp()}" for i in range(len(documents))]
+        else:
+            # Ensure lengths match
+            if len(ids) != len(documents):
+                raise ValueError("Length of ids must match length of documents")
         
         # Prepare metadata
         if metadata is None:
@@ -102,7 +106,7 @@ class DocumentQASystem:
             metadatas=metadata
         )
         
-        logger.info(f"✅ Added {len(documents)} documents successfully")
+        logger.info("✅ Added %d documents successfully", len(documents))
         
         return len(documents)
     
@@ -179,7 +183,7 @@ Answer:"""
             return answer
             
         except Exception as e:
-            logger.error(f"Error generating answer: {str(e)}")
+            logger.error("Error generating answer: %s", e)
             return f"Error generating answer: {str(e)}"
     
     def answer_question(
@@ -197,7 +201,7 @@ Answer:"""
         Returns:
             Tuple of (answer, retrieved_docs, relevance_scores)
         """
-        logger.info(f"🔍 Processing question: {question}")
+        logger.info("🔍 Processing question: %s", question)
         
         # Retrieve relevant documents
         context_docs, distances = self.search_documents(question, n_context_docs)
@@ -235,7 +239,7 @@ Answer:"""
             )
             logger.info("✅ Collection cleared successfully")
         except Exception as e:
-            logger.error(f"Error clearing collection: {str(e)}")
+            logger.error("Error clearing collection: %s", e)
 
 
 # Initialize the QA system
@@ -262,15 +266,39 @@ SAMPLE_DOCUMENTS = [
 ]
 
 
+# Helper: add sample documents with dedup by deterministic IDs
+def _add_sample_documents_dedup() -> int:
+    ids = [f"sample_doc_{i}" for i in range(len(SAMPLE_DOCUMENTS))]
+    metadata = [{"source": ids[i], "topic": "AI/ML"} for i in range(len(SAMPLE_DOCUMENTS))]
+    # Find which IDs already exist
+    existing_ids = set()
+    try:
+        got = qa_system.collection.get(ids=ids)
+        if got and isinstance(got.get("ids", None), list):
+            existing_ids = set(got["ids"])  # only the ones that exist
+    except Exception as e:
+        logger.warning("Lookup existing sample docs failed (will attempt to add all): %s", e)
+    # Compute missing indices
+    to_add_idx = [i for i, _id in enumerate(ids) if _id not in existing_ids]
+    if not to_add_idx:
+        return 0
+    # Slice the lists
+    docs = [SAMPLE_DOCUMENTS[i] for i in to_add_idx]
+    metas = [metadata[i] for i in to_add_idx]
+    sel_ids = [ids[i] for i in to_add_idx]
+    # Add only missing
+    qa_system.add_documents(docs, metas, ids=sel_ids)
+    return len(docs)
+
+
 # Preload sample documents once on startup if collection is empty
 def _preload_sample_documents_if_empty():
     try:
         stats = qa_system.get_collection_stats()
         total = stats.get("total_documents", 0)
         if total == 0:
-            metadata = [{"source": f"sample_doc_{i}", "topic": "AI/ML"} for i in range(len(SAMPLE_DOCUMENTS))]
-            qa_system.add_documents(SAMPLE_DOCUMENTS, metadata)
-            logger.info("✅ Preloaded %d sample documents into the knowledge base", len(SAMPLE_DOCUMENTS))
+            added = _add_sample_documents_dedup()
+            logger.info("✅ Preloaded sample documents (added=%d)", added)
         else:
             logger.info("ℹ️ Knowledge base already has %d documents; skipping preload", total)
     except Exception as e:
@@ -283,11 +311,12 @@ _preload_sample_documents_if_empty()
 
 # Gradio Interface Functions
 def load_sample_documents():
-    """Load sample documents into the system"""
-    metadata = [{"source": f"sample_doc_{i}", "topic": "AI/ML"} for i in range(len(SAMPLE_DOCUMENTS))]
-    count = qa_system.add_documents(SAMPLE_DOCUMENTS, metadata)
+    """Load sample documents into the system (idempotent)"""
+    added = _add_sample_documents_dedup()
     stats = qa_system.get_collection_stats()
-    return f"✅ Loaded {count} sample documents. Total documents: {stats['total_documents']}"
+    if added == 0:
+        return f"ℹ️ Sample documents were already loaded. Total documents: {stats['total_documents']}"
+    return f"✅ Loaded {added} sample documents. Total documents: {stats['total_documents']}"
 
 
 def add_custom_document(text: str):
