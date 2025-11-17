@@ -23,15 +23,19 @@ nohup mlflow server \
   >/tmp/mlflow.log 2>&1 &
 
 # Wait for upstream services to be ready before seeding/starting API and Nginx
-echo "Waiting for MLflow on 127.0.0.1:5000..."
+echo "Waiting for MLflow TCP port 127.0.0.1:5000..."
 for i in {1..60}; do
   if bash -c 'exec 3<>/dev/tcp/127.0.0.1/5000' 2>/dev/null; then
     exec 3>&- 3<&-
-    echo "MLflow is up."
+    echo "MLflow port is open."
     break
   fi
   sleep 1
 done
+
+# Give MLflow a few more seconds for the REST API to fully initialize
+echo "Waiting for MLflow REST API to initialize..."
+sleep 5
 
 ## Optionally seed MLflow with a demo model and promote to Production
 echo "SEED_MLFLOW env var is: ${SEED_MLFLOW:-false}"

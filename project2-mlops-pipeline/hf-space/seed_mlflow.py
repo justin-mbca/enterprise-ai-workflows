@@ -52,16 +52,19 @@ class DemoChurnModel(mlflow.pyfunc.PythonModel):
         return preds
 
 
-def ensure_mlflow_ready(timeout_s: int = 60) -> None:
+def ensure_mlflow_ready(timeout_s: int = 120) -> None:
     mlflow.set_tracking_uri(TRACKING_URI)
     client = MlflowClient(TRACKING_URI)
     deadline = time.time() + timeout_s
+    log.info("Waiting for MLflow REST API to be ready (up to %d seconds)...", timeout_s)
     while time.time() < deadline:
         try:
             _ = client.list_experiments()
+            log.info("MLflow REST API is ready")
             return
-        except Exception:
-            time.sleep(1)
+        except Exception as e:
+            log.debug("MLflow not ready yet: %s", e)
+            time.sleep(2)
     raise RuntimeError("MLflow tracking server not reachable")
 
 
