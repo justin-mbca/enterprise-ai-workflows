@@ -6,6 +6,13 @@ title: Enterprise AI Workflows
 
 Showcase of three production-inspired projects you can run for free.
 
+## Live demos
+
+- Project 1: https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app
+- Project 2 MLflow: https://zhangju2023-mlops-pipeline-demo.hf.space/mlflow/
+- Project 2 API docs: https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs
+- Project 3: https://huggingface.co/spaces/zhangju2023/document-qa-rag
+
 ## Projects
 
 1. Rapid Insights (Streamlit)

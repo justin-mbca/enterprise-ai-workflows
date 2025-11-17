@@ -1,5 +1,14 @@
 # 🚀 Enterprise AI Workflows - Free Implementation Guide
 
+## Quick launch
+
+- Project 1 — Streamlit app: https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app
+- Project 2 — MLflow UI: https://zhangju2023-mlops-pipeline-demo.hf.space/mlflow/
+- Project 2 — API docs: https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs
+- Project 2 — Health: https://zhangju2023-mlops-pipeline-demo.hf.space/api/health
+- Project 2 — Example prediction: https://zhangju2023-mlops-pipeline-demo.hf.space/api/predict/example
+- Project 3 — RAG app: https://huggingface.co/spaces/zhangju2023/document-qa-rag
+
 > Learn enterprise AI/ML workflows using **100% free and open-source tools**. Perfect for building your portfolio and preparing for interviews!
 
 ## 📋 Overview
