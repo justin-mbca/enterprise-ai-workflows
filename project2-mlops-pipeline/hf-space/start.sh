@@ -28,6 +28,7 @@ export DEMO_MODE=true
 nohup python -m uvicorn main_demo:app \
   --host 0.0.0.0 \
   --port 8000 \
+  --root-path /api \
   >/tmp/api.log 2>&1 &
 
 # Start Nginx in foreground
