@@ -22,9 +22,10 @@ nohup mlflow server \
   --default-artifact-root "$MLFLOW_ARTIFACT_ROOT" \
   >/tmp/mlflow.log 2>&1 &
 
-# Start FastAPI (points to local MLflow)
-cd /app/repo/project2-mlops-pipeline/deployment
-nohup python -m uvicorn main:app \
+# Start FastAPI (demo mode - works without trained model)
+cd /app/repo/project2-mlops-pipeline/hf-space
+export DEMO_MODE=true
+nohup python -m uvicorn main_demo:app \
   --host 0.0.0.0 \
   --port 8000 \
   >/tmp/api.log 2>&1 &
