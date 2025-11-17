@@ -37,6 +37,15 @@ Notes:
 - Fallback mode: artifacts stored locally under `mlruns/` (no permission tweak required).
 - Keep training light; Codespaces has limited CPU/RAM.
 
+## Sleep/Resume and URL behavior
+
+- Codespaces auto-sleeps after inactivity. To wake it, go to your Codespaces list and click Resume.
+- After resuming, background services are not running. Start them again:
+  ```bash
+  bash project2-mlops-pipeline/scripts/start-mlops-nodocker.sh
+  ```
+- Port URLs like `https://<codespace>-5000.app.github.dev` only work while that Codespace is running. If the Codespace is deleted, those URLs stop working. Create a new Codespace via the quickstart link to spin up a fresh demo.
+
 ## Cleanup
 
 ```bash

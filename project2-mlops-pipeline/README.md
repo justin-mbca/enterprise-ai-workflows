@@ -45,6 +45,14 @@ Make ports 5000, 5001, 8000, 8888 public in the Ports panel. See details in `REA
 - Model API: https://glorious-rotary-phone-g64w6j547wcwjpq-8000.app.github.dev/docs
 - Jupyter Notebook: https://glorious-rotary-phone-g64w6j547wcwjpq-8888.app.github.dev/lab/tree/notebooks/01_customer_churn_mlops.ipynb
 
+Note about Codespaces URLs:
+- These demo URLs only work while the associated Codespace is running.
+- After the Codespace auto-sleeps, click Resume in the Codespaces UI and then restart services:
+  ```bash
+  bash project2-mlops-pipeline/scripts/start-mlops-nodocker.sh
+  ```
+- If you delete the Codespace, the URLs stop working. Use the quickstart link to create a fresh Codespace.
+
 ## Accessing Services
 
 - **MLflow UI**: http://localhost:5000

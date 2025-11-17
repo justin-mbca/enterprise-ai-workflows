@@ -108,6 +108,14 @@ docker-compose up -d
 - MLflow UI: https://glorious-rotary-phone-g64w6j547wcwjpq-5000.app.github.dev
 - Model API: https://glorious-rotary-phone-g64w6j547wcwjpq-8000.app.github.dev/docs
 - Jupyter Notebook: https://glorious-rotary-phone-g64w6j547wcwjpq-8888.app.github.dev/lab/tree/notebooks/01_customer_churn_mlops.ipynb
+  
+    Note: These are GitHub Codespaces demo URLs. They are only reachable while that Codespace is running. After the Codespace auto-sleeps, click Resume in the Codespaces UI and restart services:
+  
+    ```bash
+    bash project2-mlops-pipeline/scripts/start-mlops-nodocker.sh
+    ```
+  
+    If the Codespace is deleted, these URLs will no longer work; open a new Codespace from the quickstart link to spin up a fresh demo.
 **Simulates:** Azure OpenAI RAG  
 **Tech Stack:** ChromaDB, SentenceTransformers, Hugging Face Transformers  
 **Features:**
