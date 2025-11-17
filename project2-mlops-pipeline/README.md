@@ -40,6 +40,11 @@ docker compose up -d
 
 Make ports 5000, 5001, 8000, 8888 public in the Ports panel. See details in `README-CODESPACES.md`.
 
+**Live Codespaces deployment:**
+- MLflow UI: https://glorious-rotary-phone-g64w6j547wcwjpq-5000.app.github.dev
+- Model API: https://glorious-rotary-phone-g64w6j547wcwjpq-8000.app.github.dev/docs
+- Jupyter Lab: https://glorious-rotary-phone-g64w6j547wcwjpq-8888.app.github.dev
+
 ## Accessing Services
 
 - **MLflow UI**: http://localhost:5000

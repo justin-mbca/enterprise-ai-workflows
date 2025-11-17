@@ -104,7 +104,10 @@ docker-compose up -d
 # Access Jupyter at http://localhost:8888
 ```
 
-### Project 3: Document Q&A System
+**Live deployments:**
+- MLflow UI: https://glorious-rotary-phone-g64w6j547wcwjpq-5000.app.github.dev
+- Model API: https://glorious-rotary-phone-g64w6j547wcwjpq-8000.app.github.dev/docs
+- Jupyter Lab: https://glorious-rotary-phone-g64w6j547wcwjpq-8888.app.github.dev
 **Simulates:** Azure OpenAI RAG  
 **Tech Stack:** ChromaDB, SentenceTransformers, Hugging Face Transformers  
 **Features:**
