@@ -23,12 +23,18 @@ I recreated Fortune 500 AI stacks using free open-source tools. Same patterns, z
 | Azure OpenAI | HuggingFace Transformers |
 | Dataiku | Jupyter + Streamlit + Docker |
 
-**What I Built:**
+**What I Built (All Live & Deployed):**
 ✅ Customer Analytics Dashboard (Streamlit)
-✅ MLOps Pipeline with MLflow (HF Space)
-✅ RAG Document Q&A (ChromaDB + Gradio)
+   → https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app
 
-All live, all deployed, all free. 🎯
+✅ MLOps Pipeline with MLflow (HF Space)
+   → MLflow: https://zhangju2023-mlops-pipeline-demo.hf.space/mlflow/
+   → API: https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs
+
+✅ RAG Document Q&A (ChromaDB + Gradio)
+   → https://huggingface.co/spaces/zhangju2023/document-qa-rag
+
+All live, all free. Click and try them! 🎯
 
 **The Goal:** Learn enterprise patterns without enterprise costs. Perfect for portfolios and interviews.
 
@@ -62,12 +68,18 @@ Tool Comparison:
 • Azure OpenAI → HuggingFace Transformers
 • Dataiku → Jupyter + Streamlit + Docker
 
-What I Built:
-✅ Customer Analytics Dashboard (Streamlit)
-✅ MLOps Pipeline with MLflow (HF Space)
-✅ RAG Document Q&A (ChromaDB + Gradio)
+What I Built (All Live & Deployed):
+✅ Customer Analytics Dashboard
+→ https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app
 
-All live, all deployed, all free. 🎯
+✅ MLOps Pipeline with MLflow
+→ MLflow: https://zhangju2023-mlops-pipeline-demo.hf.space/mlflow/
+→ API: https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs
+
+✅ RAG Document Q&A
+→ https://huggingface.co/spaces/zhangju2023/document-qa-rag
+
+All live, all free. Click and try them! 🎯
 
 The Goal: Learn enterprise patterns without enterprise costs. Perfect for portfolios and interviews.
 
