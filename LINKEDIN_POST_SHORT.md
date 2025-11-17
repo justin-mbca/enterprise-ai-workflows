@@ -14,6 +14,15 @@ I recreated Fortune 500 AI stacks using free open-source tools. Same patterns, z
 2. 🤖 AI/ML Execution → MLflow/HuggingFace vs Azure ML/OpenAI
 3. 🎯 Orchestration → Jupyter/Streamlit vs Dataiku/Domino
 
+**Tool-by-Tool Comparison:**
+
+| Enterprise Tool | Open-Source Alternative |
+|----------------|------------------------|
+| Azure ML | MLflow + Scikit-learn |
+| Snowflake Cortex | PostgreSQL + Python UDFs |
+| Azure OpenAI | HuggingFace Transformers |
+| Dataiku | Jupyter + Streamlit + Docker |
+
 **What I Built:**
 ✅ Customer Analytics Dashboard (Streamlit)
 ✅ MLOps Pipeline with MLflow (HF Space)
@@ -45,6 +54,12 @@ Same 3-Layer Architecture:
 1. 💾 Data & Storage → PostgreSQL/Delta Lake vs Fabric/Snowflake
 2. 🤖 AI/ML Execution → MLflow/HuggingFace vs Azure ML/OpenAI
 3. 🎯 Orchestration → Jupyter/Streamlit vs Dataiku/Domino
+
+Tool Comparison:
+• Azure ML → MLflow + Scikit-learn
+• Snowflake Cortex → PostgreSQL + Python UDFs
+• Azure OpenAI → HuggingFace Transformers
+• Dataiku → Jupyter + Streamlit + Docker
 
 What I Built:
 ✅ Customer Analytics Dashboard (Streamlit)
