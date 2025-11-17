@@ -262,6 +262,25 @@ SAMPLE_DOCUMENTS = [
 ]
 
 
+# Preload sample documents once on startup if collection is empty
+def _preload_sample_documents_if_empty():
+    try:
+        stats = qa_system.get_collection_stats()
+        total = stats.get("total_documents", 0)
+        if total == 0:
+            metadata = [{"source": f"sample_doc_{i}", "topic": "AI/ML"} for i in range(len(SAMPLE_DOCUMENTS))]
+            qa_system.add_documents(SAMPLE_DOCUMENTS, metadata)
+            logger.info("✅ Preloaded %d sample documents into the knowledge base", len(SAMPLE_DOCUMENTS))
+        else:
+            logger.info("ℹ️ Knowledge base already has %d documents; skipping preload", total)
+    except Exception as e:
+        logger.warning("Could not preload sample documents: %s", e)
+
+
+# Execute preload at import/startup
+_preload_sample_documents_if_empty()
+
+
 # Gradio Interface Functions
 def load_sample_documents():
     """Load sample documents into the system"""
