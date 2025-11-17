@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Expand nginx template with PORT env
-envsubst '${PORT}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+# Expand nginx template with PORT env (fallback if envsubst is missing)
+if command -v envsubst >/dev/null 2>&1; then
+  envsubst '${PORT}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+else
+  # Simple fallback using sed
+  sed "s/\${PORT}/${PORT}/g" /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+fi
 
 # Paths
 APP_ROOT="/app/repo/project2-mlops-pipeline"

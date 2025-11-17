@@ -10,7 +10,7 @@ ENV PYTHONUNBUFFERED=1 \
     MLFLOW_ARTIFACT_ROOT=/data/artifacts
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends nginx git build-essential && \
+    apt-get install -y --no-install-recommends nginx git build-essential gettext-base && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
