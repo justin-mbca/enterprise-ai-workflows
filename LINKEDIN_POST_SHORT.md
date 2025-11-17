@@ -46,7 +46,7 @@ All live, all free. Click and try them! 🎯
 
 ---
 
-## Copy-Paste Version (Plain Text):
+## Copy-Paste Version (Plain Text - LinkedIn Compatible):
 
 🚀 Enterprise AI for $0: Side-by-Side Architecture Comparison
 
@@ -62,11 +62,16 @@ Same 3-Layer Architecture:
 2. 🤖 AI/ML Execution → MLflow/HuggingFace vs Azure ML/OpenAI
 3. 🎯 Orchestration → Jupyter/Streamlit vs Dataiku/Domino
 
-Tool Comparison:
-• Azure ML → MLflow + Scikit-learn
-• Snowflake Cortex → PostgreSQL + Python UDFs
-• Azure OpenAI → HuggingFace Transformers
-• Dataiku → Jupyter + Streamlit + Docker
+Tool Comparison (Enterprise vs Open-Source):
+
+┌────────────────────────┬─────────────────────────────┐
+│ Enterprise Tool        │ Open-Source Alternative     │
+├────────────────────────┼─────────────────────────────┤
+│ Azure ML               │ MLflow + Scikit-learn       │
+│ Snowflake Cortex       │ PostgreSQL + Python UDFs    │
+│ Azure OpenAI           │ HuggingFace Transformers    │
+│ Dataiku                │ Jupyter + Streamlit + Docker│
+└────────────────────────┴─────────────────────────────┘
 
 What I Built (All Live & Deployed):
 ✅ Customer Analytics Dashboard
