@@ -24,9 +24,10 @@ RUN pip install --upgrade pip && \
     pip install -r /app/repo/project2-mlops-pipeline/deployment/requirements.txt && \
     pip install mlflow==3.6.0 uvicorn
 
-# Copy Nginx config template, demo API, and startup script
+# Copy Nginx config template, demo API, seeding script, and startup script
 COPY nginx.conf.template /etc/nginx/nginx.conf.template
 COPY main_demo.py /app/repo/project2-mlops-pipeline/hf-space/main_demo.py
+COPY seed_mlflow.py /app/repo/project2-mlops-pipeline/hf-space/seed_mlflow.py
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
