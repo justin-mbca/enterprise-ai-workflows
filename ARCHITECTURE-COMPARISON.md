@@ -7,14 +7,7 @@ graph TB
     %% ========== TITLE ==========
     title[Enterprise vs Open-Source AI Architecture Comparison<br/>Same Patterns, Different Tools, $54K+ Annual Savings]
     
-    %% ========== BUSINESS DRIVERS ==========
-    subgraph drivers[Business & Learning Drivers]
-        direction LR
-        B1[Enterprise:<br/>Scale, Compliance,<br/>Team Collaboration]
-        B2[Open-Source:<br/>Learning, Portfolio,<br/>Interview Prep]
-    end
     
-    title --> drivers
     
     %% ========== LAYER 1: DATA & STORAGE ==========
     subgraph layer1[💾 Data & Storage Layer]
@@ -75,7 +68,7 @@ graph TB
     end
     
     %% ========== FLOW CONNECTIONS ==========
-    drivers --> layer1
+    
     layer1 --> layer2
     layer2 --> layer3
     layer3 --> outcomes
