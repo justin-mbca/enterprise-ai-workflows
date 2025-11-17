@@ -24,6 +24,18 @@ require_root() {
   fi
 }
 
+require_ubuntu() {
+  if [ "$(uname -s)" = "Darwin" ]; then
+    echo "This script is for Ubuntu Linux VMs. On macOS, please use Docker Desktop and run:"
+    echo "  cd enterprise-ai-workflows/project2-mlops-pipeline && docker compose up -d"
+    exit 1
+  fi
+  if ! command -v apt-get >/dev/null 2>&1; then
+    echo "This script requires apt-get (Ubuntu/Debian). Please run it on an Ubuntu 22.04+ VM."
+    exit 1
+  fi
+}
+
 install_docker() {
   print_header "Installing Docker Engine and Compose"
   apt-get update -y
@@ -88,6 +100,7 @@ EOF
 
 main() {
   require_root
+  require_ubuntu
   install_docker
   clone_repo
   open_firewall

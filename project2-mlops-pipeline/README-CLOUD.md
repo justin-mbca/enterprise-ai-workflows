@@ -2,7 +2,7 @@
 
 This guide shows how to deploy the complete MLOps stack (MLflow + Jupyter + FastAPI + Postgres + nginx proxy) on a small cloud VM using Docker Compose.
 
-Works on: Ubuntu 22.04+ (Azure, AWS, GCP, DigitalOcean)
+Works on: Ubuntu 22.04+ (Azure, AWS, GCP, DigitalOcean). Not for macOS.
 
 ## 1) Provision a VM
 
@@ -17,6 +17,8 @@ SSH to your VM and run:
 ```bash
 sudo bash -lc "curl -fsSL https://raw.githubusercontent.com/justin-mbca/enterprise-ai-workflows/main/project2-mlops-pipeline/deploy/cloud-deploy.sh | bash"
 ```
+
+Note: Run this on a Linux VM (Ubuntu 22.04+). If you run it on macOS, you'll see "apt-get: command not found"—use Docker Desktop locally instead.
 
 This will:
 - Install Docker Engine + Compose plugin
