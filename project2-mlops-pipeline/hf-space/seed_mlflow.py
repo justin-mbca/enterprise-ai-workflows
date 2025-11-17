@@ -17,6 +17,8 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("seed_mlflow")
 
 TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
+BACKEND_URI = os.getenv("MLFLOW_BACKEND_URI", "sqlite:////data/mlflow.db")
+ARTIFACT_ROOT = os.getenv("MLFLOW_ARTIFACT_ROOT", "/data/artifacts")
 MODEL_NAME = os.getenv("MODEL_NAME", "customer_churn_model")
 EXPERIMENT_NAME = os.getenv("MLFLOW_EXPERIMENT", "Churn Demo")
 
@@ -52,7 +54,8 @@ class DemoChurnModel(mlflow.pyfunc.PythonModel):
         return preds
 
 
-def ensure_mlflow_ready(timeout_s: int = 120) -> None:
+def ensure_mlflow_ready(timeout_s: int = 120) -> bool:
+    """Return True if REST tracking API responds, else False."""
     mlflow.set_tracking_uri(TRACKING_URI)
     client = MlflowClient(TRACKING_URI)
     deadline = time.time() + timeout_s
@@ -61,11 +64,61 @@ def ensure_mlflow_ready(timeout_s: int = 120) -> None:
         try:
             _ = client.list_experiments()
             log.info("MLflow REST API is ready")
-            return
+            return True
         except Exception as e:
-            log.debug("MLflow not ready yet: %s", e)
+            log.info("MLflow not ready yet: %s", e)
             time.sleep(2)
-    raise RuntimeError("MLflow tracking server not reachable")
+    return False
+
+
+def seed_via_direct_store() -> None:
+    """Fallback: seed using direct backend store (SQLite) instead of REST server.
+
+    This writes runs/registry directly to the tracking DB. The UI will pick it up.
+    """
+    log.info("Falling back to direct tracking store: %s", BACKEND_URI)
+    mlflow.set_tracking_uri(BACKEND_URI)
+    client = MlflowClient(BACKEND_URI)
+
+    # Create or get experiment with explicit artifact location under ARTIFACT_ROOT
+    exp = mlflow.get_experiment_by_name(EXPERIMENT_NAME)
+    if not exp:
+        artifact_location = os.path.join(ARTIFACT_ROOT, "experiments", "churn-demo")
+        os.makedirs(artifact_location, exist_ok=True)
+        exp_id = mlflow.create_experiment(EXPERIMENT_NAME, artifact_location=artifact_location)
+    else:
+        exp_id = exp.experiment_id
+
+    with mlflow.start_run(experiment_id=exp_id) as run:
+        mlflow.set_tag("purpose", "demo")
+        mlflow.log_param("demo", True)
+
+        python_model = DemoChurnModel()
+        mlflow.pyfunc.log_model(
+            artifact_path="model",
+            python_model=python_model,
+            pip_requirements=[
+                "mlflow",
+                "pandas",
+                "numpy",
+                "cloudpickle",
+            ],
+        )
+
+        model_uri = f"runs:/{run.info.run_id}/model"
+        log.info("Registering model %s from %s (direct store)", MODEL_NAME, model_uri)
+        result = mlflow.register_model(model_uri=model_uri, name=MODEL_NAME)
+
+    # Promote to Production
+    for _ in range(30):
+        try:
+            client.transition_model_version_stage(
+                name=MODEL_NAME, version=result.version, stage="Production", archive_existing_versions=False
+            )
+            log.info("Promoted %s v%s to Production (direct store)", MODEL_NAME, result.version)
+            break
+        except Exception:
+            time.sleep(1)
 
 
 def production_version_exists(client: MlflowClient, name: str) -> bool:
@@ -78,9 +131,15 @@ def production_version_exists(client: MlflowClient, name: str) -> bool:
 
 def main() -> None:
     log.info("Seeding MLflow demo model if needed…")
-    ensure_mlflow_ready()
-    mlflow.set_tracking_uri(TRACKING_URI)
-    client = MlflowClient(TRACKING_URI)
+    # First try REST server; if not ready, fall back to direct store
+    rest_ready = ensure_mlflow_ready()
+    if rest_ready:
+        mlflow.set_tracking_uri(TRACKING_URI)
+        client = MlflowClient(TRACKING_URI)
+    else:
+        log.warning("REST API not reachable within timeout. Falling back to direct store seeding.")
+        seed_via_direct_store()
+        return
 
     # Skip if Production already exists
     if production_version_exists(client, MODEL_NAME):
@@ -124,7 +183,7 @@ def main() -> None:
             )
             log.info("Promoted %s v%s to Production", MODEL_NAME, result.version)
             break
-        except Exception as e:
+        except Exception:
             time.sleep(1)
     else:
         log.warning("Could not promote model to Production; check MLflow UI.")
