@@ -19,6 +19,29 @@ python app.py
 
 Live app: https://huggingface.co/spaces/zhangju2023/document-qa-rag
 
+## Try it online (3 steps)
+
+1) Open the Space
+   - https://huggingface.co/spaces/zhangju2023/document-qa-rag
+   - First load can take 1–3 minutes while models download
+
+2) Load documents
+   - Go to the "📁 Manage Documents" tab
+   - Click "📥 Load Sample AI/ML Documents" and wait for the status to confirm
+   - (Optional) Paste your own text into "Document Text" and click "➕ Add Document"
+
+3) Ask a question
+   - Switch to the "💬 Ask Questions" tab
+   - Type a question or click one of the sample buttons
+   - Adjust "Number of context documents" if you like (default: 3)
+   - Click "🔍 Ask Question" and read the answer
+   - Expand "📄 Retrieved Context" to see the sources and relevance scores
+
+Troubleshooting
+- If you see "No relevant documents", make sure you loaded sample or custom documents
+- First inference might be slow while the model warms up; later queries are faster
+- Click "📊 View Statistics" or "🗑️ Clear Knowledge Base" in the Manage tab to inspect/reset the index
+
 ## Deploy to Hugging Face Spaces
 
 Option A — Create a new Space and upload:
