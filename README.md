@@ -202,6 +202,13 @@ Live app: https://huggingface.co/spaces/zhangju2023/document-qa-rag
 4. **Deploy publicly** - Show working demos in interviews
 5. **Write blog posts** - Explain your implementation decisions
 
+## 🌐 Website
+
+Static showcase (GitHub Pages): If Pages is enabled for this repo using the `/docs` folder, visit:
+https://justin-mbca.github.io/enterprise-ai-workflows/
+
+This site lists all projects and links to the live demos (Streamlit, Hugging Face Spaces, Codespaces).
+
 ## 🤝 Contributing
 
 Have improvements or alternative implementations? PRs welcome!
