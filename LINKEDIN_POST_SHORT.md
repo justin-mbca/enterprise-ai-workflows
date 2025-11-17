@@ -32,7 +32,8 @@ All live, all deployed, all free. 🎯
 
 **The Goal:** Learn enterprise patterns without enterprise costs. Perfect for portfolios and interviews.
 
-📊 See the architecture comparison (diagram attached)
+📊 Architecture comparison (diagram attached)
+📋 Detailed comparison: https://github.com/justin-mbca/enterprise-ai-workflows/blob/main/ARCHITECTURE-COMPARISON.md
 🔗 Full repo & live demos: https://github.com/justin-mbca/enterprise-ai-workflows
 
 #MachineLearning #MLOps #DataScience #AI #OpenSource #Portfolio #CareerDevelopment
@@ -70,7 +71,8 @@ All live, all deployed, all free. 🎯
 
 The Goal: Learn enterprise patterns without enterprise costs. Perfect for portfolios and interviews.
 
-📊 See the architecture comparison (diagram attached)
+📊 Architecture comparison (diagram attached)
+📋 Detailed comparison: https://github.com/justin-mbca/enterprise-ai-workflows/blob/main/ARCHITECTURE-COMPARISON.md
 🔗 Full repo & live demos: https://github.com/justin-mbca/enterprise-ai-workflows
 
 #MachineLearning #MLOps #DataScience #AI #OpenSource #Portfolio #CareerDevelopment
