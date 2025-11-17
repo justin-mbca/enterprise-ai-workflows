@@ -8,10 +8,20 @@ Showcase of three production-inspired projects you can run for free.
 
 ## Live demos
 
-- Project 1: https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app
-- Project 2 MLflow: https://zhangju2023-mlops-pipeline-demo.hf.space/mlflow/
-- Project 2 API docs: https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs
-- Project 3: https://huggingface.co/spaces/zhangju2023/document-qa-rag
+<p>
+  <a href="https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app">
+    <img alt="Streamlit App" src="https://img.shields.io/badge/Project%201-Streamlit%20App-ff4b4b?logo=streamlit&logoColor=white">
+  </a>
+  <a href="https://zhangju2023-mlops-pipeline-demo.hf.space/mlflow/">
+    <img alt="MLflow UI" src="https://img.shields.io/badge/Project%202-MLflow%20UI-0194E2">
+  </a>
+  <a href="https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs">
+    <img alt="API Docs" src="https://img.shields.io/badge/Project%202-API%20Docs-009688?logo=fastapi&logoColor=white">
+  </a>
+  <a href="https://huggingface.co/spaces/zhangju2023/document-qa-rag">
+    <img alt="RAG App" src="https://img.shields.io/badge/Project%203-RAG%20App-ffcc4d?logo=huggingface&logoColor=black">
+  </a>
+</p>
 
 ## Projects
 

@@ -2,12 +2,26 @@
 
 ## Quick launch
 
-- Project 1 — Streamlit app: https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app
-- Project 2 — MLflow UI: https://zhangju2023-mlops-pipeline-demo.hf.space/mlflow/
-- Project 2 — API docs: https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs
-- Project 2 — Health: https://zhangju2023-mlops-pipeline-demo.hf.space/api/health
-- Project 2 — Example prediction: https://zhangju2023-mlops-pipeline-demo.hf.space/api/predict/example
-- Project 3 — RAG app: https://huggingface.co/spaces/zhangju2023/document-qa-rag
+<p>
+  <a href="https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app">
+    <img alt="Streamlit App" src="https://img.shields.io/badge/Project%201-Streamlit%20App-ff4b4b?logo=streamlit&logoColor=white">
+  </a>
+  <a href="https://zhangju2023-mlops-pipeline-demo.hf.space/mlflow/">
+    <img alt="MLflow UI" src="https://img.shields.io/badge/Project%202-MLflow%20UI-0194E2">
+  </a>
+  <a href="https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs">
+    <img alt="API Docs" src="https://img.shields.io/badge/Project%202-API%20Docs-009688?logo=fastapi&logoColor=white">
+  </a>
+  <a href="https://zhangju2023-mlops-pipeline-demo.hf.space/api/health">
+    <img alt="API Health" src="https://img.shields.io/badge/Project%202-Health-4caf50">
+  </a>
+  <a href="https://zhangju2023-mlops-pipeline-demo.hf.space/api/predict/example">
+    <img alt="Example Prediction" src="https://img.shields.io/badge/Project%202-Example%20Prediction-7c4dff">
+  </a>
+  <a href="https://huggingface.co/spaces/zhangju2023/document-qa-rag">
+    <img alt="RAG App" src="https://img.shields.io/badge/Project%203-RAG%20App-ffcc4d?logo=huggingface&logoColor=black">
+  </a>
+</p>
 
 > Learn enterprise AI/ML workflows using **100% free and open-source tools**. Perfect for building your portfolio and preparing for interviews!
 
