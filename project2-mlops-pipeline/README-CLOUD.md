@@ -24,6 +24,18 @@ This will:
 - Start all services with `docker compose up -d`
 - Open firewall ports (if UFW is installed)
 
+### Optional: Terraform one-click for AWS
+
+Prefer IaC? Use the Terraform config to provision an EC2 VM and auto-run the deploy script:
+
+```bash
+cd project2-mlops-pipeline/deploy/terraform/aws
+terraform init
+terraform apply -auto-approve -var "key_name=<YOUR_KEYPAIR_NAME>"
+```
+
+Outputs will include public IP and service URLs.
+
 ## 3) Access services
 
 - MLflow UI:           http://<server-ip>:5000
@@ -62,6 +74,7 @@ sudo docker compose down
   sudo docker exec mlops-jupyter chown -R jovyan:users /mlflow
   ```
 - If containers fail to start due to port conflicts, change the published ports in `docker-compose.yml`.
+ - If your cloud provider blocks ports, confirm the security group / firewall allows inbound 5000, 5001, 8000, 8888 (and 22 for SSH).
 
 ## 7) Clean up
 
