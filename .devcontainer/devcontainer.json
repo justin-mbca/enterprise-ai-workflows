@@ -1,16 +1,22 @@
 {
   "name": "enterprise-ai-workflows",
+  "image": "mcr.microsoft.com/devcontainers/base:jammy",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "moby": false
+      "moby": true
     }
   },
+  "overrideCommand": false,
+  "init": true,
+  "mounts": [
+    "source=devcontainer-docker-lib,target=/var/lib/docker,type=volume"
+  ],
   "forwardPorts": [5000, 5001, 8000, 8888],
   "portsAttributes": {
-    "5000": { "label": "MLflow", "requireLocalPort": true, "protocol": "http", "visibility": "public" },
-    "5001": { "label": "MLflow Proxy", "requireLocalPort": true, "protocol": "http", "visibility": "public" },
-    "8000": { "label": "Model API", "requireLocalPort": true, "protocol": "http", "visibility": "public" },
-    "8888": { "label": "Jupyter", "requireLocalPort": true, "protocol": "http", "visibility": "public" }
+    "5000": { "label": "MLflow", "protocol": "http", "visibility": "public" },
+    "5001": { "label": "MLflow Proxy", "protocol": "http", "visibility": "public" },
+    "8000": { "label": "Model API", "protocol": "http", "visibility": "public" },
+    "8888": { "label": "Jupyter", "protocol": "http", "visibility": "public" }
   },
   "customizations": {
     "vscode": {
@@ -21,6 +27,7 @@
       ]
     }
   },
+  "onCreateCommand": "docker version || true",
   "postCreateCommand": "echo 'Run: cd project2-mlops-pipeline && docker compose up -d'",
   "remoteUser": "vscode"
 }

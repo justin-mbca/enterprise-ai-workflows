@@ -40,3 +40,27 @@ docker compose down -v
 ```
 
 Then stop/delete the Codespace from the GitHub UI.
+
+## Troubleshooting (Recovery Mode / container error)
+
+If you see “This codespace is currently running in recovery mode…”
+
+1. View creation logs:
+  - Cmd/Ctrl + Shift + P → “Codespaces: View Creation Log”
+2. Rebuild container:
+  - Cmd/Ctrl + Shift + P → “Codespaces: Rebuild Container”
+3. Verify Docker is running inside the devcontainer:
+  ```bash
+  docker info
+  docker compose version
+  ```
+  If not ready yet, retry for up to 2 minutes:
+  ```bash
+  for i in {1..60}; do docker info >/dev/null 2>&1 && echo "Docker ready" && break; sleep 2; done
+  ```
+4. If the error persists, ensure your devcontainer uses:
+  - `ghcr.io/devcontainers/features/docker-in-docker:2` with `moby: true`
+  - `overrideCommand: false`, `init: true`
+  - Mount for `/var/lib/docker` as a volume
+
+This repository’s `.devcontainer/devcontainer.json` is configured accordingly.
