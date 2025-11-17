@@ -1,5 +1,9 @@
 # Project 1: Rapid Insights (Streamlit)
 
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app)
+
+Live app: https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app
+
 A Streamlit app that simulates Snowflake Cortex AI capabilities using open-source tools.
 
 - Sentiment Analysis (TextBlob)
@@ -26,6 +30,10 @@ streamlit run app.py
    - Python version: 3.11
    - Dependencies file: project1-rapid-insights/requirements.txt
 5. Deploy
+
+Or open the already deployed app here:
+
+- https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app
 
 Notes:
 - We intentionally removed Prophet from requirements to avoid build issues. The app will fallback to a simple forecast if Prophet isn’t available.

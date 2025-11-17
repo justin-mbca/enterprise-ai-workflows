@@ -84,6 +84,8 @@ cd project1-rapid-insights
 streamlit run app.py
 ```
 
+Live app: https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app
+
 ### Project 2: Enterprise MLOps Pipeline
 **Simulates:** Azure ML, Dataiku  
 **Tech Stack:** MLflow, Docker, PostgreSQL, FastAPI, Scikit-learn  
