@@ -13,7 +13,8 @@ fi
 APP_ROOT="/app/repo/project2-mlops-pipeline"
 
 # Start MLflow tracking server (SQLite + local artifacts)
-export MLFLOW_TRACKING_URI="http://127.0.0.1:5000"
+# Use localhost (not 127.0.0.1) to satisfy MLflow 3.x Host header validation in direct client calls
+export MLFLOW_TRACKING_URI="http://localhost:5000"
 mkdir -p /data/artifacts
 nohup mlflow server \
   --host 0.0.0.0 \
@@ -35,7 +36,7 @@ done
 
 # Give MLflow a few more seconds for the REST API to fully initialize
 echo "Waiting for MLflow REST API to initialize..."
-sleep 5
+sleep 10
 
 ## Optionally seed MLflow with a demo model and promote to Production
 echo "SEED_MLFLOW env var is: ${SEED_MLFLOW:-false}"

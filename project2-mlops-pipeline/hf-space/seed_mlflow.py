@@ -16,7 +16,7 @@ from mlflow.tracking import MlflowClient
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("seed_mlflow")
 
-TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://127.0.0.1:5000")
+TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
 MODEL_NAME = os.getenv("MODEL_NAME", "customer_churn_model")
 EXPERIMENT_NAME = os.getenv("MLFLOW_EXPERIMENT", "Churn Demo")
 
