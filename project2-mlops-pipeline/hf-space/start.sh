@@ -22,16 +22,7 @@ nohup mlflow server \
   --default-artifact-root "$MLFLOW_ARTIFACT_ROOT" \
   >/tmp/mlflow.log 2>&1 &
 
-# Start FastAPI (demo mode - works without trained model)
-cd /app/repo/project2-mlops-pipeline/hf-space
-export DEMO_MODE=true
-nohup python -m uvicorn main_demo:app \
-  --host 0.0.0.0 \
-  --port 8000 \
-  --root-path /api \
-  >/tmp/api.log 2>&1 &
-
-# Wait for upstream services to be ready before starting Nginx
+# Wait for upstream services to be ready before seeding/starting API and Nginx
 echo "Waiting for MLflow on 127.0.0.1:5000..."
 for i in {1..60}; do
   if bash -c 'exec 3<>/dev/tcp/127.0.0.1/5000' 2>/dev/null; then
@@ -41,6 +32,21 @@ for i in {1..60}; do
   fi
   sleep 1
 done
+
+## Optionally seed MLflow with a demo model and promote to Production
+if [ "${SEED_MLFLOW:-false}" = "true" ]; then
+  echo "Seeding MLflow with demo model..."
+  python /app/repo/project2-mlops-pipeline/hf-space/seed_mlflow.py || true
+fi
+
+# Start FastAPI (demo mode - works without trained model)
+cd /app/repo/project2-mlops-pipeline/hf-space
+export DEMO_MODE=true
+nohup python -m uvicorn main_demo:app \
+  --host 0.0.0.0 \
+  --port 8000 \
+  --root-path /api \
+  >/tmp/api.log 2>&1 &
 
 echo "Waiting for FastAPI on 127.0.0.1:8000..."
 for i in {1..60}; do
