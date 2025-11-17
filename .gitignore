@@ -51,6 +51,9 @@ data/
 *.zip
 *.tar.gz
 
+# Allow devcontainer config JSON
+!.devcontainer/devcontainer.json
+
 # Docker volumes
 postgres_data/
 mlflow_artifacts/

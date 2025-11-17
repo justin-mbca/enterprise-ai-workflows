@@ -1,0 +1,26 @@
+{
+  "name": "enterprise-ai-workflows",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": false
+    }
+  },
+  "forwardPorts": [5000, 5001, 8000, 8888],
+  "portsAttributes": {
+    "5000": { "label": "MLflow", "requireLocalPort": true, "protocol": "http", "visibility": "public" },
+    "5001": { "label": "MLflow Proxy", "requireLocalPort": true, "protocol": "http", "visibility": "public" },
+    "8000": { "label": "Model API", "requireLocalPort": true, "protocol": "http", "visibility": "public" },
+    "8888": { "label": "Jupyter", "requireLocalPort": true, "protocol": "http", "visibility": "public" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "ms-python.python",
+        "ms-toolsai.jupyter"
+      ]
+    }
+  },
+  "postCreateCommand": "echo 'Run: cd project2-mlops-pipeline && docker compose up -d'",
+  "remoteUser": "vscode"
+}

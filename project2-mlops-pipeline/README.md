@@ -27,6 +27,19 @@ Want to run this stack on a cloud VM (Azure/AWS/GCP) with a single command? See 
 
 This includes a one-liner to install Docker, clone this repo, open firewall ports, and start the stack.
 
+## Run Online (GitHub Codespaces)
+
+[Open in Codespaces](https://codespaces.new/justin-mbca/enterprise-ai-workflows?quickstart=1)
+
+Then:
+
+```bash
+cd project2-mlops-pipeline
+docker compose up -d
+```
+
+Make ports 5000, 5001, 8000, 8888 public in the Ports panel. See details in `README-CODESPACES.md`.
+
 ## Accessing Services
 
 - **MLflow UI**: http://localhost:5000
