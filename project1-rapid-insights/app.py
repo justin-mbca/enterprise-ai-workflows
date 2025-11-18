@@ -383,8 +383,9 @@ elif page == "📈 Forecasting":
                 'value': y
             })
             
-            # Make forecast
-            forecast_df = db.forecast_timeseries(df, forecast_periods)
+            # Make forecast (force seasonal mode for "Seasonal" trend)
+            force_seasonal = (trend == "Seasonal")
+            forecast_df = db.forecast_timeseries(df, forecast_periods, force_seasonal=force_seasonal)
             
             # Plot results
             fig = go.Figure()

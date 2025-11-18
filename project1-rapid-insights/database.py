@@ -177,7 +177,7 @@ class DatabaseManager:
                     'negative' if blob.sentiment.polarity < -0.1 else 'neutral'
         }
     
-    def forecast_timeseries(self, df: pd.DataFrame, periods: int = 30) -> pd.DataFrame:
+    def forecast_timeseries(self, df: pd.DataFrame, periods: int = 30, force_seasonal: bool = False) -> pd.DataFrame:
         """
         Forecast time series data
         Simulates: Snowflake ML_FORECAST() function
@@ -185,6 +185,7 @@ class DatabaseManager:
         Args:
             df: DataFrame with 'date' and 'value' columns
             periods: Number of periods to forecast
+            force_seasonal: If True, forces seasonal forecasting regardless of auto-detection
         
         Returns:
             DataFrame with forecast results
@@ -216,7 +217,7 @@ class DatabaseManager:
             
         except ImportError:
             # Fallback to simple linear regression if Prophet not installed
-            return self._simple_forecast(df, periods)
+            return self._simple_forecast(df, periods, force_seasonal=force_seasonal)
 
     def forecast_timeseries_monthly(self, df: pd.DataFrame, months: int = 6) -> pd.DataFrame:
         """Lightweight monthly forecast tuned for visuals:
@@ -270,7 +271,7 @@ class DatabaseManager:
         out['date'] = pd.to_datetime(out['date'])
         return out
     
-    def _simple_forecast(self, df: pd.DataFrame, periods: int) -> pd.DataFrame:
+    def _simple_forecast(self, df: pd.DataFrame, periods: int, force_seasonal: bool = False) -> pd.DataFrame:
         """Simple linear forecast anchored at last observed value with seasonal detection"""
         y = df['value'].values.astype(float)
         y_last = float(y[-1])
@@ -299,18 +300,22 @@ class DatabaseManager:
             slope = slope_full
         
         # Detect if data is seasonal: check if oscillation dominates and trend is weak
-        # Compare std of values to the range of the linear trend
-        detrended = y - (slope_full * X + (y_mean - slope_full * X_mean))
-        oscillation_std = float(np.std(detrended))
-        value_range = float(np.max(y) - np.min(y))
-        trend_range = abs(slope_full * len(y))
-        
-        # Seasonal if: oscillation is large, trend contribution is small, and values oscillate around mean
-        is_seasonal = (
-            (oscillation_std > value_range * 0.3) and  # Significant oscillation
-            (trend_range < value_range * 0.2) and      # Weak trend
-            (abs(slope_full) < 0.5)                     # Very small slope
-        )
+        # Can be overridden by force_seasonal parameter
+        if force_seasonal:
+            is_seasonal = True
+        else:
+            # Compare std of values to the range of the linear trend
+            detrended = y - (slope_full * X + (y_mean - slope_full * X_mean))
+            oscillation_std = float(np.std(detrended))
+            value_range = float(np.max(y) - np.min(y))
+            trend_range = abs(slope_full * len(y))
+            
+            # Seasonal if: oscillation is large, trend contribution is small, and values oscillate around mean
+            is_seasonal = (
+                (oscillation_std > value_range * 0.3) and  # Significant oscillation
+                (trend_range < value_range * 0.2) and      # Weak trend
+                (abs(slope_full) < 0.5)                     # Very small slope
+            )
         
         # Build forecast starting exactly at last observed value
         last_date = df['date'].iloc[-1]
