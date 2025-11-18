@@ -37,6 +37,17 @@ When the Space is running, try these endpoints:
 - **Health check**: `/api/health` - Service status
 - **Test prediction**: `/api/predict/example` - Try a sample prediction
 
+### HR & Payroll Demo Endpoints
+
+These additional endpoints align with the HR/payroll use cases showcased in Projects 1 & 3:
+
+- `POST /api/hr/payroll/forecast` — Simple linear forecast of monthly payroll totals
+  - Body (optional): historical `[{ month, payroll_amount }]`, else synthetic history is used
+  - Field: `forecast_months` (default 6)
+- `POST /api/hr/attrition/score` — Rule-based attrition risk score in [0,1] with label low/medium/high
+  - Body: `{ employee: { tenure_months, avg_week_hours, salary, department, overtime_recent, manager_changes } }`
+- `GET /api/hr/overtime-flag?weekly_hours=45` — Returns `{ overtime_flag: 1|0 }`
+
 ## Architecture
 
 ```
@@ -50,6 +61,7 @@ Nginx (port 7860)
 ## Notes
 - Data is ephemeral on free Spaces. This is intended as a demo, not a persistent registry.
 - Demo mode uses rule-based predictions (no ML model required)
+- HR endpoints are light-weight and require no heavy dependencies
 - If MLflow shows an Invalid Host header, the Nginx proxy sets `Host: localhost:5000` to satisfy MLflow 3.6.0 validation.
 
 ## Source Code

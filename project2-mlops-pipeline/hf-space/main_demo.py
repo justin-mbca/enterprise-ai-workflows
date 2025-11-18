@@ -3,7 +3,7 @@ Model Deployment API using FastAPI - DEMO MODE
 Works without pre-trained models for HF Space demo
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
 import pandas as pd
@@ -96,6 +96,56 @@ class HealthResponse(BaseModel):
     demo_mode: bool
 
 
+# === HR/Payroll models ===
+class PayrollPoint(BaseModel):
+    month: str = Field(..., description="Month in YYYY-MM-28 format", example="2024-08-28")
+    payroll_amount: float = Field(..., description="Total payroll spent for the month")
+
+
+class PayrollForecastRequest(BaseModel):
+    history: Optional[List[PayrollPoint]] = Field(
+        default=None,
+        description="Optional historical monthly payroll amounts; if omitted, synthetic demo data is used",
+    )
+    forecast_months: int = Field(6, ge=1, le=24, description="How many months to forecast")
+
+
+class PayrollForecastPoint(BaseModel):
+    month: str
+    forecast: float
+    lower_bound: float
+    upper_bound: float
+
+
+class PayrollForecastResponse(BaseModel):
+    history_count: int
+    forecast: List[PayrollForecastPoint]
+    model_version: str
+    timestamp: str
+
+
+class AttritionRequest(BaseModel):
+    employee: Dict[str, Any] = Field(
+        ...,
+        description="Employee features (e.g., tenure_months, avg_week_hours, salary, department, overtime_recent, manager_changes)",
+        example={
+            "tenure_months": 5,
+            "avg_week_hours": 46,
+            "salary": 58000,
+            "department": "Support",
+            "overtime_recent": True,
+            "manager_changes": 2,
+        },
+    )
+
+
+class AttritionResponse(BaseModel):
+    risk_score: float
+    label: str
+    model_version: str
+    timestamp: str
+
+
 def demo_predict(features: Dict[str, Any]) -> tuple[int, float]:
     """
     Generate realistic demo predictions based on features
@@ -129,6 +179,58 @@ def demo_predict(features: Dict[str, Any]) -> tuple[int, float]:
     prediction = 1 if churn_score > 0.5 else 0
     
     return prediction, float(churn_score)
+
+
+def _synthesize_payroll_history(months: int = 18) -> List[PayrollPoint]:
+    """Create synthetic monthly payroll similar to the Streamlit demo."""
+    rng = pd.date_range(end=pd.Timestamp.today(), periods=months, freq="M")
+    base = 500000.0
+    history: List[PayrollPoint] = []
+    for i, m in enumerate(rng):
+        seasonal = 25000.0 * np.sin(2 * np.pi * (m.month) / 12.0)
+        trend = 4000.0 * i
+        noise = np.random.normal(0, 15000)
+        amt = float(max(300000.0, base + seasonal + trend + noise))
+        history.append(PayrollPoint(month=m.strftime("%Y-%m-28"), payroll_amount=amt))
+    return history
+
+
+def _linear_monthly_forecast(history: List[PayrollPoint], forecast_months: int) -> List[PayrollForecastPoint]:
+    """Simple linear trend forecast with naive CI bounds (±1.96*std)."""
+    # Convert to arrays
+    y = np.array([p.payroll_amount for p in history], dtype=float)
+    x = np.arange(len(y), dtype=float)
+    if len(y) < 2:
+        # Not enough data, return flat forecast
+        last = y[-1] if len(y) else 500000.0
+        base_dates = pd.date_range(end=pd.Timestamp.today(), periods=1, freq="M")
+        start = base_dates[-1]
+        out = []
+        for i in range(forecast_months):
+            month = (start + pd.DateOffset(months=i + 1)).strftime("%Y-%m-28")
+            out.append(PayrollForecastPoint(month=month, forecast=float(last), lower_bound=float(last*0.9), upper_bound=float(last*1.1)))
+        return out
+
+    # Fit linear regression y = a*x + b
+    a, b = np.polyfit(x, y, 1)
+    std = float(np.std(y))
+
+    # Future months
+    last_month = pd.to_datetime(history[-1].month)
+    out: List[PayrollForecastPoint] = []
+    for i in range(forecast_months):
+        xi = len(y) + i
+        yhat = float(a * xi + b)
+        month = (last_month + pd.DateOffset(months=i + 1)).strftime("%Y-%m-28")
+        out.append(
+            PayrollForecastPoint(
+                month=month,
+                forecast=yhat,
+                lower_bound=yhat - 1.96 * std,
+                upper_bound=yhat + 1.96 * std,
+            )
+        )
+    return out
 
 
 def load_model():
@@ -394,6 +496,66 @@ async def predict_example():
     )
     
     return await predict(sample_request)
+
+
+# ========================= HR / Payroll Demo Endpoints =========================
+@app.post("/hr/payroll/forecast", response_model=PayrollForecastResponse, tags=["HR & Payroll"])
+async def hr_payroll_forecast(req: PayrollForecastRequest):
+    """Forecast monthly payroll totals using a simple linear trend (demo)."""
+    # Use provided history or synthesize
+    history = req.history or _synthesize_payroll_history(18)
+    forecast = _linear_monthly_forecast(history, req.forecast_months)
+    return PayrollForecastResponse(
+        history_count=len(history),
+        forecast=forecast,
+        model_version=model_version,
+        timestamp=datetime.utcnow().isoformat(),
+    )
+
+
+@app.post("/hr/attrition/score", response_model=AttritionResponse, tags=["HR & Payroll"])
+async def hr_attrition_score(req: AttritionRequest):
+    """Rule-based attrition risk score in [0,1] for demo purposes."""
+    f = req.employee
+    score = 0.0
+    # Short tenure
+    if float(f.get("tenure_months", 0)) < 6:
+        score += 0.25
+    elif float(f.get("tenure_months", 0)) < 12:
+        score += 0.15
+    # Long hours
+    if float(f.get("avg_week_hours", 40)) > 45:
+        score += 0.25
+    elif float(f.get("avg_week_hours", 40)) > 42:
+        score += 0.15
+    # Salary
+    if float(f.get("salary", 0)) < 60000:
+        score += 0.15
+    # Department effect
+    dept = str(f.get("department", "")).lower()
+    if dept in {"support", "sales"}:
+        score += 0.1
+    # Overtime and org churn
+    if bool(f.get("overtime_recent", False)):
+        score += 0.1
+    if int(f.get("manager_changes", 0)) >= 2:
+        score += 0.1
+    # Random jitter
+    score = float(np.clip(score + np.random.uniform(-0.05, 0.05), 0.0, 1.0))
+    label = "high" if score > 0.66 else "medium" if score > 0.33 else "low"
+    return AttritionResponse(
+        risk_score=score,
+        label=label,
+        model_version=model_version,
+        timestamp=datetime.utcnow().isoformat(),
+    )
+
+
+@app.get("/hr/overtime-flag", tags=["HR & Payroll"])
+async def hr_overtime_flag(weekly_hours: float = 40.0):
+    """Return 1 if weekly hours exceed 40, else 0 (consistent with SQL UDF demo)."""
+    flag = 1 if float(weekly_hours) > 40.0 else 0
+    return {"weekly_hours": weekly_hours, "overtime_flag": flag}
 
 
 if __name__ == "__main__":

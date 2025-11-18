@@ -7,12 +7,12 @@
 
 ## Files to Update in Your Space
 
-Upload these 4 files from `project2-mlops-pipeline/hf-space/` to your Space:
+Upload these files from `project2-mlops-pipeline/hf-space/` to your Space:
 
-1. **Dockerfile** - Updated to copy main_demo.py
-2. **main_demo.py** - NEW FILE - FastAPI with demo predictions
-3. **start.sh** - Updated to run demo mode
-4. **README.md** - Updated with demo mode info
+1. **Dockerfile** - Copies `main_demo.py` into the image
+2. **main_demo.py** - FastAPI with demo predictions (+ HR endpoints)
+3. **start.sh** - Runs Nginx + MLflow + API in demo mode
+4. **README.md** - Updated with demo mode + HR endpoints info
 
 ## How to Update
 
@@ -41,6 +41,10 @@ Test these URLs (should all work now):
 - ✅ https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs
 - ✅ https://zhangju2023-mlops-pipeline-demo.hf.space/api/health
 - ✅ https://zhangju2023-mlops-pipeline-demo.hf.space/api/predict/example
+ - ✅ HR endpoints:
+   - `POST` https://zhangju2023-mlops-pipeline-demo.hf.space/api/hr/payroll/forecast
+   - `POST` https://zhangju2023-mlops-pipeline-demo.hf.space/api/hr/attrition/score
+   - `GET`  https://zhangju2023-mlops-pipeline-demo.hf.space/api/hr/overtime-flag?weekly_hours=45
 
 ## What You'll See
 
