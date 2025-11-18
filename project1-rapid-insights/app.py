@@ -19,8 +19,11 @@ st.set_page_config(
 )
 
 # Initialize database
+# Version marker to force cache invalidation on code updates
+DB_VERSION = "v2.0_forecast_fix"
+
 @st.cache_resource
-def init_database():
+def init_database(version: str = DB_VERSION):
     return DatabaseManager()
 
 db = init_database()
