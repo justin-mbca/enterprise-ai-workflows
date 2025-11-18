@@ -384,8 +384,14 @@ elif page == "📈 Forecasting":
             })
             
             # Make forecast (force seasonal mode for "Seasonal" trend)
-            force_seasonal = (trend == "Seasonal")
-            forecast_df = db.forecast_timeseries(df, forecast_periods, force_seasonal=force_seasonal)
+            try:
+                force_seasonal = (trend == "Seasonal")
+                forecast_df = db.forecast_timeseries(df, forecast_periods, force_seasonal=force_seasonal)
+            except TypeError:
+                # Fallback for older cached DatabaseManager without force_seasonal param
+                st.warning("🔄 Refreshing forecasting engine... Please try again in a moment.")
+                st.cache_resource.clear()
+                st.rerun()
             
             # Plot results
             fig = go.Figure()
