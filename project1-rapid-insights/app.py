@@ -25,6 +25,92 @@ def init_database():
 
 db = init_database()
 
+# Fallback seeding in case the deployed DatabaseManager is outdated
+def _seed_hr_data_fallback(db_obj: DatabaseManager):
+    """Create minimal HR tables and seed a few rows if DatabaseManager lacks seed_hr_data()."""
+    try:
+        conn = getattr(db_obj, 'conn', None)
+        if conn is None:
+            return
+        cur = conn.cursor()
+        # Create tables if not exist
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS hr_employees (
+                employee_id INTEGER PRIMARY KEY,
+                first_name TEXT,
+                last_name TEXT,
+                department TEXT,
+                hire_date TEXT,
+                term_date TEXT,
+                salary REAL,
+                avg_week_hours REAL
+            )
+            """
+        )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS hr_payroll_timeseries (
+                id INTEGER PRIMARY KEY,
+                month TEXT,
+                payroll_amount REAL
+            )
+            """
+        )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS hr_survey_feedback (
+                id INTEGER PRIMARY KEY,
+                department TEXT,
+                text TEXT,
+                created_at TEXT
+            )
+            """
+        )
+        # Seed small sample if empty
+        cur.execute("SELECT COUNT(*) FROM hr_employees")
+        if cur.fetchone()[0] == 0:
+            sample_emps = [
+                (1, "Alex", "Doe", "Engineering", "2023-01-15", None, 110000.0, 42.0),
+                (2, "Sam", "Lee", "Sales", "2022-06-01", None, 85000.0, 38.0),
+                (3, "Jamie", "Patel", "HR", "2021-09-10", None, 78000.0, 40.0),
+            ]
+            cur.executemany(
+                """
+                INSERT INTO hr_employees (employee_id, first_name, last_name, department, hire_date, term_date, salary, avg_week_hours)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                sample_emps,
+            )
+        cur.execute("SELECT COUNT(*) FROM hr_payroll_timeseries")
+        if cur.fetchone()[0] == 0:
+            months = pd.date_range(end=datetime.now(), periods=6, freq='M')
+            base = 500000.0
+            data = []
+            for i, m in enumerate(months):
+                amt = base + 10000 * i + np.random.normal(0, 10000)
+                data.append((m.strftime("%Y-%m-28"), float(max(300000.0, amt))))
+            cur.executemany(
+                "INSERT INTO hr_payroll_timeseries (month, payroll_amount) VALUES (?, ?)",
+                data,
+            )
+        cur.execute("SELECT COUNT(*) FROM hr_survey_feedback")
+        if cur.fetchone()[0] == 0:
+            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            feedback = [
+                ("Engineering", "I appreciate flexible hours and supportive team.", now),
+                ("Sales", "Quarterly targets are aggressive but motivating.", now),
+                ("HR", "Onboarding process is smooth.", now),
+            ]
+            cur.executemany(
+                "INSERT INTO hr_survey_feedback (department, text, created_at) VALUES (?, ?, ?)",
+                feedback,
+            )
+        conn.commit()
+    except Exception:
+        # Silent fallback; actual DatabaseManager.seed_hr_data should handle the full dataset
+        pass
+
 # Sidebar
 st.sidebar.title("🚀 Rapid Insights")
 st.sidebar.markdown("**Simulates:** Snowflake Cortex AI")
@@ -462,7 +548,13 @@ elif page == "👥 HR Analytics":
     st.subheader("Setup")
     if st.button("📥 Load Sample HR Data", type="primary"):
         with st.spinner("Seeding HR tables..."):
-            db.seed_hr_data()
+            try:
+                if hasattr(db, "seed_hr_data"):
+                    db.seed_hr_data()
+                else:
+                    _seed_hr_data_fallback(db)
+            except AttributeError:
+                _seed_hr_data_fallback(db)
         st.success("✅ HR tables seeded: employees, payroll_timeseries, survey_feedback")
 
     st.markdown("---")
