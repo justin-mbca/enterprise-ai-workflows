@@ -271,7 +271,7 @@ class DatabaseManager:
         return out
     
     def _simple_forecast(self, df: pd.DataFrame, periods: int) -> pd.DataFrame:
-        """Simple linear forecast anchored at last observed value"""
+        """Simple linear forecast anchored at last observed value with seasonal detection"""
         y = df['value'].values.astype(float)
         y_last = float(y[-1])
         
@@ -298,8 +298,13 @@ class DatabaseManager:
         else:
             slope = slope_full
         
+        # Detect if data is seasonal (low trend, high oscillation)
+        detrended = y - (slope_full * X + (y_mean - slope_full * X_mean))
+        oscillation_std = float(np.std(detrended))
+        trend_magnitude = abs(slope_full * len(y))
+        is_seasonal = (oscillation_std > trend_magnitude * 0.5) and (abs(slope_full) < 0.1)
+        
         # Build forecast starting exactly at last observed value
-        # forecast[i] = y_last + slope * (i+1) for i in [0, periods-1]
         last_date = df['date'].iloc[-1]
         forecast_dates = pd.date_range(
             start=last_date + timedelta(days=1),
@@ -307,8 +312,24 @@ class DatabaseManager:
             freq='D'
         )
         
-        forecast_steps = np.arange(1, periods + 1, dtype=float)
-        forecast_y = y_last + slope * forecast_steps
+        if is_seasonal:
+            # For seasonal data, use naive seasonal forecast (repeat last cycle)
+            # Use last 30 days as the seasonal pattern
+            cycle_len = min(30, len(y))
+            last_cycle = y[-cycle_len:]
+            
+            # Tile the pattern to cover forecast periods
+            num_repeats = (periods // cycle_len) + 1
+            seasonal_pattern = np.tile(last_cycle, num_repeats)[:periods]
+            
+            # Anchor to last value by adjusting the pattern
+            pattern_start = seasonal_pattern[0]
+            adjustment = y_last - pattern_start
+            forecast_y = seasonal_pattern + adjustment
+        else:
+            # Linear trend forecast
+            forecast_steps = np.arange(1, periods + 1, dtype=float)
+            forecast_y = y_last + slope * forecast_steps
         
         # Use volatility of recent changes for bounds
         diffs = np.diff(y)
