@@ -273,7 +273,7 @@ class DatabaseManager:
     def _simple_forecast(self, df: pd.DataFrame, periods: int) -> pd.DataFrame:
         """Simple linear forecast fallback"""
         # Calculate linear trend (ensure 1D arrays to avoid broadcasting bugs)
-        X = np.arange(len(df))  # shape (n,)
+        X = np.arange(len(df), dtype=float)  # shape (n,)
         y = df['value'].values.astype(float)
 
         # Simple linear regression (least squares)
@@ -283,7 +283,16 @@ class DatabaseManager:
         numerator = ((X - X_mean) * (y - y_mean)).sum()
         denominator = ((X - X_mean) ** 2).sum()
         slope = (numerator / denominator) if denominator != 0 else 0.0
-        intercept = y_mean - slope * X_mean
+
+        # If slope numerically ~0, use recent momentum (median of last diffs)
+        if abs(slope) < 1e-9 and len(y) >= 2:
+            diffs = np.diff(y[-min(7, len(y)):])
+            if diffs.size > 0:
+                slope = float(np.median(diffs))
+
+        # Calibrate intercept so the line passes near the last observed value
+        y_last = float(y[-1])
+        intercept = y_last - slope * (len(df) - 1)
         
         # Generate forecast
         last_date = df['date'].iloc[-1]
@@ -293,17 +302,18 @@ class DatabaseManager:
             freq='D'
         )
         
-        forecast_X = np.arange(len(df), len(df) + periods).reshape(-1, 1)
+        forecast_X = np.arange(len(df), len(df) + periods, dtype=float)
         forecast_y = slope * forecast_X + intercept
         
-        # Simple confidence interval (±10%)
-        std_dev = y.std()
+        # Use volatility of recent changes for bounds
+        diffs = np.diff(y)
+        std_dev = float(np.std(diffs)) if diffs.size > 0 else float(np.std(y))
         
         return pd.DataFrame({
             'date': forecast_dates,
-            'forecast': forecast_y.flatten(),
-            'lower_bound': forecast_y.flatten() - 1.96 * std_dev,
-            'upper_bound': forecast_y.flatten() + 1.96 * std_dev
+            'forecast': forecast_y,
+            'lower_bound': forecast_y - 1.96 * std_dev,
+            'upper_bound': forecast_y + 1.96 * std_dev
         })
     
     def execute_sql(self, query: str) -> pd.DataFrame:
