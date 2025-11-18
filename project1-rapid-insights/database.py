@@ -206,10 +206,10 @@ class DatabaseManager:
             
             # Make forecast
             future = model.make_future_dataframe(periods=periods)
-            forecast = model.predict(future)
+            prophet_pred = model.predict(future)
             
             # Return only forecast period
-            forecast_df = forecast.tail(periods)[['ds', 'yhat', 'yhat_lower', 'yhat_upper']]
+            forecast_df = prophet_pred.tail(periods)[['ds', 'yhat', 'yhat_lower', 'yhat_upper']]
             forecast_df.columns = ['date', 'forecast', 'lower_bound', 'upper_bound']
             
             return forecast_df.reset_index(drop=True)
@@ -217,6 +217,42 @@ class DatabaseManager:
         except ImportError:
             # Fallback to simple linear regression if Prophet not installed
             return self._simple_forecast(df, periods)
+
+    def forecast_timeseries_monthly(self, df: pd.DataFrame, months: int = 6) -> pd.DataFrame:
+        """Lightweight monthly forecast: assumes df has monthly points in 'date' and values in 'value'.
+        Returns monthly horizon with naive confidence bounds. No Prophet required.
+        """
+        # Ensure correct types
+        series = df.copy()
+        series['date'] = pd.to_datetime(series['date'])
+        series = series.sort_values('date')
+        y = series['value'].astype(float).values
+        n = len(y)
+        if n < 2:
+            # Not enough data; flat forecast
+            last = float(y[-1]) if n == 1 else 0.0
+            last_month = series['date'].iloc[-1] if n == 1 else pd.Timestamp.today()
+            out_dates = [last_month + pd.DateOffset(months=i+1) for i in range(months)]
+            return pd.DataFrame({
+                'date': pd.to_datetime([d.strftime('%Y-%m-28') for d in out_dates]),
+                'forecast': [last]*months,
+                'lower_bound': [last*0.9]*months,
+                'upper_bound': [last*1.1]*months,
+            })
+        # Fit linear trend vs monthly index
+        X = np.arange(n, dtype=float)
+        slope, intercept = np.polyfit(X, y, 1)
+        std = float(np.std(y))
+        last_month = series['date'].iloc[-1]
+        out_rows = []
+        for i in range(months):
+            xi = n + i
+            yhat = float(slope * xi + intercept)
+            month = (last_month + pd.DateOffset(months=i+1)).strftime('%Y-%m-28')
+            out_rows.append((month, yhat, yhat - 1.96*std, yhat + 1.96*std))
+        out = pd.DataFrame(out_rows, columns=['date','forecast','lower_bound','upper_bound'])
+        out['date'] = pd.to_datetime(out['date'])
+        return out
     
     def _simple_forecast(self, df: pd.DataFrame, periods: int) -> pd.DataFrame:
         """Simple linear forecast fallback"""
@@ -380,7 +416,7 @@ class DatabaseManager:
         """Cleanup on deletion"""
         try:
             self.close()
-        except:
+        except sqlite3.Error:
             pass
 
 
@@ -396,7 +432,7 @@ if __name__ == "__main__":
     
     # Test SQL with AI functions
     print("\n=== SQL with AI Functions Test ===")
-    query = """
+    sql_query = """
         SELECT 
             text,
             sentiment_analysis(text) as sentiment_score,
@@ -408,7 +444,7 @@ if __name__ == "__main__":
         FROM customer_feedback
         LIMIT 5
     """
-    results = db.execute_sql(query)
+    results = db.execute_sql(sql_query)
     print(results)
     
     # Test forecasting

@@ -606,7 +606,11 @@ elif page == "👥 HR Analytics":
             st.caption(f"Historical periods: {len(ts_df)} months")
             if len(ts_df) > 3:
                 with st.spinner("Forecasting payroll totals..."):
-                    forecast_df = db.forecast_timeseries(ts_df.rename(columns={"date": "date", "value": "value"}), forecast_months*30)
+                    # Prefer monthly forecast for better visibility on monthly series
+                    if hasattr(db, "forecast_timeseries_monthly"):
+                        forecast_df = db.forecast_timeseries_monthly(ts_df, forecast_months)
+                    else:
+                        forecast_df = db.forecast_timeseries(ts_df, forecast_months*30)
                 # Plot
                 fig = go.Figure()
                 fig.add_trace(go.Scatter(x=ts_df['date'], y=ts_df['value'], mode='lines', name='Historical', line=dict(color='blue')))
