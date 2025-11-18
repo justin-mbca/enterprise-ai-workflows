@@ -298,11 +298,19 @@ class DatabaseManager:
         else:
             slope = slope_full
         
-        # Detect if data is seasonal (low trend, high oscillation)
+        # Detect if data is seasonal: check if oscillation dominates and trend is weak
+        # Compare std of values to the range of the linear trend
         detrended = y - (slope_full * X + (y_mean - slope_full * X_mean))
         oscillation_std = float(np.std(detrended))
-        trend_magnitude = abs(slope_full * len(y))
-        is_seasonal = (oscillation_std > trend_magnitude * 0.5) and (abs(slope_full) < 0.1)
+        value_range = float(np.max(y) - np.min(y))
+        trend_range = abs(slope_full * len(y))
+        
+        # Seasonal if: oscillation is large, trend contribution is small, and values oscillate around mean
+        is_seasonal = (
+            (oscillation_std > value_range * 0.3) and  # Significant oscillation
+            (trend_range < value_range * 0.2) and      # Weak trend
+            (abs(slope_full) < 0.5)                     # Very small slope
+        )
         
         # Build forecast starting exactly at last observed value
         last_date = df['date'].iloc[-1]
@@ -314,12 +322,12 @@ class DatabaseManager:
         
         if is_seasonal:
             # For seasonal data, use naive seasonal forecast (repeat last cycle)
-            # Use last 30 days as the seasonal pattern
-            cycle_len = min(30, len(y))
+            # Use last 30-60 days as the seasonal pattern to capture full cycles
+            cycle_len = min(60, len(y))
             last_cycle = y[-cycle_len:]
             
             # Tile the pattern to cover forecast periods
-            num_repeats = (periods // cycle_len) + 1
+            num_repeats = (periods // cycle_len) + 2
             seasonal_pattern = np.tile(last_cycle, num_repeats)[:periods]
             
             # Anchor to last value by adjusting the pattern
