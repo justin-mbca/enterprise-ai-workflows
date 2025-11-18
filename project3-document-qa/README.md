@@ -1,3 +1,14 @@
+---
+title: Document Q&A (RAG)
+emoji: 📚
+colorFrom: blue
+colorTo: purple
+sdk: gradio
+sdk_version: "4.39.0"
+app_file: app.py
+pinned: false
+---
+
 # Project 3: Document Q&A (Gradio / Hugging Face Spaces)
 
 [![Open in Hugging Face Spaces](https://img.shields.io/badge/Spaces-Open%20App-blue?logo=huggingface)](https://huggingface.co/spaces/zhangju2023/document-qa-rag)
