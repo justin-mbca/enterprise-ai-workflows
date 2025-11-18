@@ -220,17 +220,17 @@ class DatabaseManager:
     
     def _simple_forecast(self, df: pd.DataFrame, periods: int) -> pd.DataFrame:
         """Simple linear forecast fallback"""
-        # Calculate linear trend
-        X = np.arange(len(df)).reshape(-1, 1)
-        y = df['value'].values
-        
-        # Simple linear regression
+        # Calculate linear trend (ensure 1D arrays to avoid broadcasting bugs)
+        X = np.arange(len(df))  # shape (n,)
+        y = df['value'].values.astype(float)
+
+        # Simple linear regression (least squares)
         X_mean = X.mean()
         y_mean = y.mean()
-        
+        # Covariance(X, y) / Variance(X)
         numerator = ((X - X_mean) * (y - y_mean)).sum()
         denominator = ((X - X_mean) ** 2).sum()
-        slope = numerator / denominator
+        slope = (numerator / denominator) if denominator != 0 else 0.0
         intercept = y_mean - slope * X_mean
         
         # Generate forecast
