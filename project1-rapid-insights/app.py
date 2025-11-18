@@ -20,7 +20,7 @@ st.set_page_config(
 
 # Initialize database
 # Version marker to force cache invalidation on code updates
-DB_VERSION = "v2.2_seasonal_detection_fix"
+DB_VERSION = "v2.3_force_seasonal_param"
 
 @st.cache_resource
 def init_database(version: str = DB_VERSION):
