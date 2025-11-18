@@ -219,19 +219,28 @@ class DatabaseManager:
             return self._simple_forecast(df, periods)
 
     def forecast_timeseries_monthly(self, df: pd.DataFrame, months: int = 6) -> pd.DataFrame:
-        """Lightweight monthly forecast: assumes df has monthly points in 'date' and values in 'value'.
-        Returns monthly horizon with naive confidence bounds. No Prophet required.
+        """Lightweight monthly forecast tuned for visuals:
+        - Uses recent momentum (median of last diffs) to extend from last observed value
+        - Avoids mean-reversion look of global regression on short windows
+        - Returns monthly horizon with simple ±1.96*std(diffs) bounds
         """
-        # Ensure correct types
         series = df.copy()
         series['date'] = pd.to_datetime(series['date'])
         series = series.sort_values('date')
         y = series['value'].astype(float).values
         n = len(y)
-        if n < 2:
-            # Not enough data; flat forecast
-            last = float(y[-1]) if n == 1 else 0.0
-            last_month = series['date'].iloc[-1] if n == 1 else pd.Timestamp.today()
+
+        # Edge cases
+        if n == 0:
+            return pd.DataFrame({
+                'date': pd.to_datetime([]),
+                'forecast': [],
+                'lower_bound': [],
+                'upper_bound': []
+            })
+        if n == 1:
+            last = float(y[-1])
+            last_month = series['date'].iloc[-1]
             out_dates = [last_month + pd.DateOffset(months=i+1) for i in range(months)]
             return pd.DataFrame({
                 'date': pd.to_datetime([d.strftime('%Y-%m-28') for d in out_dates]),
@@ -239,17 +248,24 @@ class DatabaseManager:
                 'lower_bound': [last*0.9]*months,
                 'upper_bound': [last*1.1]*months,
             })
-        # Fit linear trend vs monthly index
-        X = np.arange(n, dtype=float)
-        slope, intercept = np.polyfit(X, y, 1)
-        std = float(np.std(y))
+
+        # Momentum-based slope from recent changes
+        window = int(min(6, n-1))
+        recent = y[-(window+1):]
+        diffs = np.diff(recent)
+        slope = float(np.median(diffs))  # robust to outliers on short series
+        last_val = float(y[-1])
+        std = float(np.std(diffs)) if diffs.size > 1 else float(np.std(y))
+
+        # Build monthly horizon starting from last observed month
         last_month = series['date'].iloc[-1]
         out_rows = []
+        level = last_val
         for i in range(months):
-            xi = n + i
-            yhat = float(slope * xi + intercept)
+            level = level + slope
             month = (last_month + pd.DateOffset(months=i+1)).strftime('%Y-%m-28')
-            out_rows.append((month, yhat, yhat - 1.96*std, yhat + 1.96*std))
+            out_rows.append((month, level, level - 1.96*std, level + 1.96*std))
+
         out = pd.DataFrame(out_rows, columns=['date','forecast','lower_bound','upper_bound'])
         out['date'] = pd.to_datetime(out['date'])
         return out
