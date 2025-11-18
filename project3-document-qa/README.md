@@ -45,6 +45,20 @@ Troubleshooting
 - First inference might be slow while the model warms up; later queries are faster
 - Click "📊 View Statistics" or "🗑️ Clear Knowledge Base" in the Manage tab to inspect/reset the index
 
+## CI/CD (Auto-deploy from GitHub)
+
+This folder is configured to auto-sync to the Hugging Face Space via GitHub Actions.
+
+- Workflow: `.github/workflows/deploy-project3-to-hf.yml`
+- Trigger: Any push to `main` that changes files under `project3-document-qa/**`
+- Requirements: GitHub repo secret `HF_TOKEN` containing a Hugging Face write token
+- Target Space: `zhangju2023/document-qa-rag`
+
+If you just pushed changes and don't see them live yet:
+1. Open the GitHub "Actions" tab and check the latest run for "Deploy Project 3 (RAG) to Hugging Face Space".
+2. Wait 1–3 minutes for the Space to rebuild after the upload completes.
+3. Hard refresh the Space page (Cmd+Shift+R) if the UI was open during the update.
+
 ## Deploy to Hugging Face Spaces
 
 Option A — Create a new Space and upload:
