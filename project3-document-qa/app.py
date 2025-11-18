@@ -139,7 +139,7 @@ class DocumentQASystem:
         self,
         question: str,
         context_docs: List[str],
-        max_new_tokens: int = 150
+        max_new_tokens: int = 100
     ) -> str:
         """
         Generate answer using retrieved context
@@ -152,55 +152,68 @@ class DocumentQASystem:
         Returns:
             Generated answer
         """
-        # Prepare prompt with context
-        context = "\n\n".join([f"Context {i+1}: {doc}" for i, doc in enumerate(context_docs)])
+        # For HR/factual questions, directly extract and present context
+        # This avoids LLM hallucination issues with small models
+        if not context_docs:
+            return "No relevant information found in the documents."
         
-        prompt = f"""Based on the following context, answer the question concisely.
+        # Prepare a clear, factual response from the context
+        context = "\n\n".join([f"**Source {i+1}:** {doc}" for i, doc in enumerate(context_docs[:2])])
+        
+        # For simple factual questions, just return the context with light formatting
+        # This is more reliable than generative models for HR policy questions
+        question_lower = question.lower()
+        factual_keywords = ['when', 'what', 'how much', 'how many', 'policy', 'payroll', 'benefits', 'pto', 'overtime', 'fmla']
+        
+        if any(keyword in question_lower for keyword in factual_keywords):
+            # Return context directly with a simple intro
+            return f"Based on the HR policy documents:\n\n{context}"
+        
+        # For other questions, try generation with strict controls
+        prompt = f"""Answer this question using only the information provided. Be concise and factual.
 
-{context}
+Context: {context_docs[0][:300]}
 
 Question: {question}
-
 Answer:"""
         
-        # Generate response with better stopping criteria
         try:
             response = self.llm(
                 prompt,
                 max_new_tokens=max_new_tokens,
                 num_return_sequences=1,
-                temperature=0.7,
+                temperature=0.3,  # Lower temperature for more factual responses
                 top_p=0.9,
-                repetition_penalty=1.2,
+                repetition_penalty=1.5,  # Stronger penalty
                 do_sample=True,
                 eos_token_id=self.tokenizer.eos_token_id,
                 pad_token_id=self.tokenizer.eos_token_id
             )
             
-            # Extract answer (remove prompt)
             full_text = response[0]['generated_text']
             answer = full_text[len(prompt):].strip()
             
-            # Stop at first newline pair or "Question:" to prevent loops
+            # Aggressive cleaning
             if '\n\n' in answer:
                 answer = answer.split('\n\n')[0].strip()
             if 'Question:' in answer:
                 answer = answer.split('Question:')[0].strip()
-            if 'Answer:' in answer and answer.count('Answer:') > 1:
-                # Take only first answer if multiple appear
-                parts = answer.split('Answer:')
-                answer = parts[1].strip() if len(parts) > 1 else answer
+            if 'Context:' in answer:
+                answer = answer.split('Context:')[0].strip()
             
-            # Clean up answer
-            if not answer or len(answer) < 10:
-                # Fallback: extract key info from context directly
-                answer = f"Based on the documents: {context_docs[0][:200]}..."
+            # Validate answer quality
+            if (not answer or len(answer) < 15 or 
+                answer.count('.') > 10 or  # Too many sentences
+                any(year in answer for year in ['2017', '2018', '2019']) or  # Hallucinated dates
+                'webinar' in answer.lower() or 'reddit' in answer.lower()):  # Hallucinated content
+                # Fall back to context
+                return f"Based on the HR policy documents:\n\n{context}"
             
             return answer
             
         except Exception as e:
             logger.error("Error generating answer: %s", e)
-            return f"Error generating answer: {str(e)}"
+            return f"Based on the HR policy documents:\n\n{context}"
     
     def answer_question(
         self,
