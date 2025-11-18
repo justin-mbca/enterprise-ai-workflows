@@ -265,6 +265,17 @@ SAMPLE_DOCUMENTS = [
     "Kubernetes is an open-source container orchestration platform that automates deploying, scaling, and managing containerized applications. It groups containers into logical units for easy management and discovery, and provides tools for load balancing, rolling updates, and service discovery.",
 ]
 
+# HR/Payroll policy sample documents for domain-specific demo
+HR_SAMPLE_DOCUMENTS = [
+    "Paid Time Off (PTO): Full-time employees accrue 1.67 days of PTO per month (20 days/year). Unused PTO carries over up to 5 days. PTO requests must be submitted at least 2 weeks in advance via the HR portal.",
+    "Overtime Policy: Non-exempt hourly employees are eligible for overtime pay at 1.5x the regular rate for hours worked over 40 in a workweek. Overtime must be pre-approved by a manager.",
+    "Payroll Schedule: Employees are paid bi-weekly on Fridays. Direct deposit is required. Payroll cut-off is Tuesday 5pm for the current pay period.",
+    "Benefits Eligibility: Employees working 30+ hours per week are eligible for medical, dental, and vision plans starting on the first day of the month following 30 days of employment.",
+    "Leave of Absence: FMLA provides up to 12 weeks of unpaid, job-protected leave for eligible employees. Employees must provide 30 days' notice when foreseeable and submit required documentation.",
+    "Expense Reimbursement: Business expenses must be submitted within 30 days with itemized receipts. Reimbursements are processed in the next payroll cycle upon approval.",
+    "Performance Reviews: Formal performance reviews occur annually in Q4 with mid-year checkpoints. Salary adjustments, if any, are effective in the first payroll of Q1."
+]
+
 
 # Helper: add sample documents with dedup by deterministic IDs
 def _add_sample_documents_dedup() -> int:
@@ -317,6 +328,35 @@ def load_sample_documents():
     if added == 0:
         return f"ℹ️ Sample documents were already loaded. Total documents: {stats['total_documents']}"
     return f"✅ Loaded {added} sample documents. Total documents: {stats['total_documents']}"
+
+
+def load_sample_hr_documents():
+    """Load HR/policy sample documents into the system (idempotent)"""
+    # Build deterministic IDs for HR docs
+    ids = [f"hr_doc_{i}" for i in range(len(HR_SAMPLE_DOCUMENTS))]
+    metadata = [{"source": ids[i], "domain": "hr", "topic": "HR/Payroll"} for i in range(len(HR_SAMPLE_DOCUMENTS))]
+
+    # Determine which ones already exist
+    existing_ids = set()
+    try:
+        got = qa_system.collection.get(ids=ids)
+        if got and isinstance(got.get("ids", None), list):
+            existing_ids = set(got["ids"])  # existing subset
+    except Exception:
+        existing_ids = set()
+
+    to_add_idx = [i for i, _id in enumerate(ids) if _id not in existing_ids]
+    if not to_add_idx:
+        stats = qa_system.get_collection_stats()
+        return f"ℹ️ HR policy documents already loaded. Total documents: {stats['total_documents']}"
+
+    docs = [HR_SAMPLE_DOCUMENTS[i] for i in to_add_idx]
+    metas = [metadata[i] for i in to_add_idx]
+    sel_ids = [ids[i] for i in to_add_idx]
+
+    qa_system.add_documents(docs, metas, ids=sel_ids)
+    stats = qa_system.get_collection_stats()
+    return f"✅ Loaded {len(docs)} HR policy documents. Total documents: {stats['total_documents']}"
 
 
 def add_custom_document(text: str):
@@ -450,10 +490,15 @@ with gr.Blocks(title="Document Q&A System", theme=gr.themes.Soft()) as demo:
             with gr.Column():
                 gr.Markdown("#### Load Sample Documents")
                 load_sample_btn = gr.Button("📥 Load Sample AI/ML Documents", variant="primary")
+                load_hr_btn = gr.Button("📥 Load Sample HR Policy Documents")
                 load_status = gr.Textbox(label="Status", interactive=False)
                 
                 load_sample_btn.click(
                     load_sample_documents,
+                    outputs=load_status
+                )
+                load_hr_btn.click(
+                    load_sample_hr_documents,
                     outputs=load_status
                 )
             

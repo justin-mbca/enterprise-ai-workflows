@@ -138,9 +138,29 @@ class DatabaseManager:
             num_sentences = min(num_sentences, len(sentences))
             return '. '.join(sentences[:num_sentences]) + '.'
         
+        def tenure_days_udf(hire_date: str, term_date: str = None) -> int:
+            """Compute tenure in days given ISO date strings (YYYY-MM-DD). If term_date is null/empty, uses today."""
+            if not hire_date:
+                return 0
+            try:
+                start = datetime.strptime(hire_date[:10], "%Y-%m-%d")
+                end = datetime.strptime(term_date[:10], "%Y-%m-%d") if term_date else datetime.today()
+                return max(0, (end - start).days)
+            except Exception:
+                return 0
+        
+        def overtime_flag_udf(total_hours: float) -> int:
+            """Return 1 if weekly hours exceed 40, else 0."""
+            try:
+                return 1 if float(total_hours) > 40.0 else 0
+            except Exception:
+                return 0
+        
         # Register functions
         self.conn.create_function("sentiment_analysis", 1, sentiment_analysis_udf)
         self.conn.create_function("summarize_text", 2, summarize_text_udf)
+        self.conn.create_function("tenure_days", 2, tenure_days_udf)
+        self.conn.create_function("overtime_flag", 1, overtime_flag_udf)
     
     def analyze_sentiment(self, text: str) -> Dict[str, Any]:
         """
@@ -245,6 +265,112 @@ class DatabaseManager:
             DataFrame with query results
         """
         return pd.read_sql_query(query, self.conn)
+
+    # ===================== HR/Payroll Helpers =====================
+    def seed_hr_data(self):
+        """Create and populate HR-focused tables for demos (employees, payroll, survey feedback)."""
+        cursor = self.conn.cursor()
+        # Employees
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS hr_employees (
+                employee_id INTEGER PRIMARY KEY,
+                first_name TEXT,
+                last_name TEXT,
+                department TEXT,
+                hire_date TEXT,
+                term_date TEXT,
+                salary REAL,
+                avg_week_hours REAL
+            )
+            """
+        )
+        # Payroll time series (monthly totals)
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS hr_payroll_timeseries (
+                id INTEGER PRIMARY KEY,
+                month TEXT,
+                payroll_amount REAL
+            )
+            """
+        )
+        # HR survey feedback
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS hr_survey_feedback (
+                id INTEGER PRIMARY KEY,
+                department TEXT,
+                text TEXT,
+                created_at TEXT
+            )
+            """
+        )
+        
+        # Only seed if empty
+        cursor.execute("SELECT COUNT(*) FROM hr_employees")
+        if cursor.fetchone()[0] == 0:
+            departments = ["Engineering", "Sales", "HR", "Finance", "Support"]
+            base_date = datetime.today() - timedelta(days=365*3)
+            rows = []
+            for i in range(1, 51):
+                dept = np.random.choice(departments)
+                hire = base_date + timedelta(days=int(np.random.uniform(0, 365*3)))
+                term = None if np.random.rand() > 0.15 else hire + timedelta(days=int(np.random.uniform(120, 900)))
+                salary = float(np.random.normal(90000, 20000))
+                hours = float(np.random.normal(40, 5))
+                rows.append((i, f"Emp{i}", "Test", dept, hire.strftime("%Y-%m-%d"), term.strftime("%Y-%m-%d") if term else None, max(45000.0, salary), max(30.0, hours)))
+            cursor.executemany(
+                """
+                INSERT INTO hr_employees (employee_id, first_name, last_name, department, hire_date, term_date, salary, avg_week_hours)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                rows
+            )
+        
+        cursor.execute("SELECT COUNT(*) FROM hr_payroll_timeseries")
+        if cursor.fetchone()[0] == 0:
+            # Generate last 18 months of payroll totals
+            months = pd.date_range(end=datetime.today(), periods=18, freq='M')
+            base = 500000.0
+            data = []
+            for m in months:
+                seasonal = 25000.0 * np.sin(2 * np.pi * (m.month) / 12.0)
+                trend = 4000.0 * (months.get_loc(m))
+                noise = np.random.normal(0, 15000)
+                amt = base + seasonal + trend + noise
+                data.append((m.strftime("%Y-%m-28"), float(max(300000.0, amt))))
+            cursor.executemany(
+                "INSERT INTO hr_payroll_timeseries (month, payroll_amount) VALUES (?, ?)",
+                data
+            )
+        
+        cursor.execute("SELECT COUNT(*) FROM hr_survey_feedback")
+        if cursor.fetchone()[0] == 0:
+            samples = [
+                ("Engineering", "I appreciate the flexible hours and supportive team."),
+                ("Engineering", "Tech debt is high; sprint planning could improve."),
+                ("Sales", "Quarterly targets feel aggressive but achievable."),
+                ("Sales", "CRM updates are slow and affect productivity."),
+                ("HR", "Onboarding was smooth and well-structured."),
+                ("Finance", "We need more automation in reconciliation."),
+                ("Support", "Ticket volume is high; need better tooling."),
+                ("Support", "Customers are happier after recent changes!")
+            ]
+            now = datetime.now()
+            cursor.executemany(
+                "INSERT INTO hr_survey_feedback (department, text, created_at) VALUES (?, ?, ?)",
+                [(dept, txt, (now - timedelta(days=int(np.random.uniform(0, 120)))).strftime("%Y-%m-%d %H:%M:%S")) for dept, txt in samples]
+            )
+        
+        self.conn.commit()
+
+    def get_hr_payroll_series(self) -> pd.DataFrame:
+        """Return payroll time series as DataFrame with columns ['date','value'] for forecasting."""
+        df = pd.read_sql_query("SELECT month as date, payroll_amount as value FROM hr_payroll_timeseries ORDER BY month", self.conn)
+        # Ensure datetime type
+        df['date'] = pd.to_datetime(df['date'].astype(str).str[:10])
+        return df
     
     def close(self):
         """Close database connection"""

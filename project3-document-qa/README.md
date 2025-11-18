@@ -27,7 +27,7 @@ Live app: https://huggingface.co/spaces/zhangju2023/document-qa-rag
 
 2) Load documents
    - Go to the "📁 Manage Documents" tab
-   - Click "📥 Load Sample AI/ML Documents" and wait for the status to confirm
+   - Click "📥 Load Sample AI/ML Documents" or "📥 Load Sample HR Policy Documents" and wait for the status to confirm
    - (Optional) Paste your own text into "Document Text" and click "➕ Add Document"
 
 3) Ask a question
@@ -38,6 +38,9 @@ Live app: https://huggingface.co/spaces/zhangju2023/document-qa-rag
    - Expand "📄 Retrieved Context" to see the sources and relevance scores
 
 Troubleshooting
+- HR use case tips:
+   - Try questions like "What is the overtime policy?", "When is payroll processed?", or "How does PTO accrue?"
+   - Load the HR sample first to populate the knowledge base with HR/policy docs.
 - If you see "No relevant documents", make sure you loaded sample or custom documents
 - First inference might be slow while the model warms up; later queries are faster
 - Click "📊 View Statistics" or "🗑️ Clear Knowledge Base" in the Manage tab to inspect/reset the index

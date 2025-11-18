@@ -9,6 +9,7 @@ A Streamlit app that simulates Snowflake Cortex AI capabilities using open-sourc
 - Sentiment Analysis (TextBlob)
 - Time Series Forecast (simple linear fallback; Prophet optional if available)
 - SQL Playground with custom AI SQL functions (SQLite UDFs)
+- HR & Payroll Analytics (sample HR tables, payroll forecasting, survey sentiment, SQL UDFs for tenure and overtime)
 
 ## Local Run
 

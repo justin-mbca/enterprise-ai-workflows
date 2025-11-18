@@ -32,7 +32,7 @@ st.sidebar.markdown("**Tech Stack:** Python, SQLite, Streamlit")
 
 page = st.sidebar.selectbox(
     "Select Analysis",
-    ["📊 Overview", "💬 Sentiment Analysis", "📈 Forecasting", "🔍 SQL Playground"]
+    ["📊 Overview", "💬 Sentiment Analysis", "📈 Forecasting", "🔍 SQL Playground", "👥 HR Analytics"]
 )
 
 # Main title
@@ -450,6 +450,98 @@ SELECT sentiment_analysis('This is amazing!') as score;
 SELECT summarize_text('Long text here...', 2) as summary;
 -- Result: First sentence. Second sentence.
         """, language="sql")
+
+# ============================================================================
+# PAGE 5: HR ANALYTICS
+# ============================================================================
+elif page == "👥 HR Analytics":
+    st.header("HR & Payroll Analytics")
+    st.markdown("*Workforce planning, payroll forecasting, and employee feedback sentiment*")
+
+    # Seed data
+    st.subheader("Setup")
+    if st.button("📥 Load Sample HR Data", type="primary"):
+        with st.spinner("Seeding HR tables..."):
+            db.seed_hr_data()
+        st.success("✅ HR tables seeded: employees, payroll_timeseries, survey_feedback")
+
+    st.markdown("---")
+    col_left, col_right = st.columns([3, 2])
+
+    with col_left:
+        st.subheader("📈 Payroll Forecast (Monthly Totals)")
+        forecast_months = st.slider("Forecast months", 1, 12, 6)
+        try:
+            ts_df = db.get_hr_payroll_series()
+            st.caption(f"Historical periods: {len(ts_df)} months")
+            if len(ts_df) > 3:
+                with st.spinner("Forecasting payroll totals..."):
+                    forecast_df = db.forecast_timeseries(ts_df.rename(columns={"date": "date", "value": "value"}), forecast_months*30)
+                # Plot
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(x=ts_df['date'], y=ts_df['value'], mode='lines', name='Historical', line=dict(color='blue')))
+                fig.add_trace(go.Scatter(x=forecast_df['date'], y=forecast_df['forecast'], mode='lines', name='Forecast', line=dict(color='red', dash='dash')))
+                fig.update_layout(title='Monthly Payroll Total (Historical + Forecast)', xaxis_title='Date', yaxis_title='Amount', hovermode='x unified')
+                st.plotly_chart(fig, use_container_width=True)
+                # Metrics
+                colm1, colm2 = st.columns(2)
+                with colm1:
+                    st.metric("Forecast Mean", f"{forecast_df['forecast'].mean():,.0f}")
+                with colm2:
+                    st.metric("Last Forecast", f"{forecast_df['forecast'].iloc[-1]:,.0f}")
+            else:
+                st.info("Load sample HR data to view payroll time series.")
+        except Exception as e:
+            st.warning(f"Unable to load payroll series: {e}")
+
+    with col_right:
+        st.subheader("💬 Sentiment by Department")
+        try:
+            sentiment_df = db.execute_sql(
+                """
+                SELECT department,
+                       AVG(sentiment_analysis(text)) AS avg_sentiment,
+                       COUNT(*) AS n
+                FROM hr_survey_feedback
+                GROUP BY department
+                ORDER BY department
+                """
+            )
+            if len(sentiment_df) > 0:
+                fig2 = px.bar(sentiment_df, x='department', y='avg_sentiment', title='Average Sentiment by Department', color='department')
+                st.plotly_chart(fig2, use_container_width=True)
+                st.dataframe(sentiment_df)
+            else:
+                st.info("Load sample HR data to analyze survey sentiment.")
+        except Exception as e:
+            st.warning(f"Unable to compute sentiment: {e}")
+
+    st.markdown("---")
+    st.subheader("🧪 Sample HR SQL (features in SQL)")
+    with st.expander("Employee tenure in days (tenure_days)"):
+        st.code(
+            """
+-- Compute tenure days and status
+SELECT employee_id, department, hire_date, term_date,
+       tenure_days(hire_date, term_date) AS tenure_days,
+       CASE WHEN term_date IS NULL THEN 'Active' ELSE 'Terminated' END AS status
+FROM hr_employees
+LIMIT 10;
+            """,
+            language="sql",
+        )
+    with st.expander("Overtime flag (overtime_flag)"):
+        st.code(
+            """
+-- Flag overtime based on average weekly hours
+SELECT employee_id, department, avg_week_hours,
+       overtime_flag(avg_week_hours) AS has_overtime
+FROM hr_employees
+ORDER BY avg_week_hours DESC
+LIMIT 10;
+            """,
+            language="sql",
+        )
 
 # Footer
 st.markdown("---")
