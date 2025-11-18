@@ -305,6 +305,17 @@ HR_SAMPLE_DOCUMENTS = [
     "Performance Reviews: Formal performance reviews occur annually in Q4 with mid-year checkpoints. Salary adjustments, if any, are effective in the first payroll of Q1."
 ]
 
+# Arbitration and Subrogation policy sample documents
+ARBITRATION_SUBROGATION_SAMPLE_DOCUMENTS = [
+    "Arbitration Policy: All employment-related disputes must be resolved through binding arbitration under the American Arbitration Association (AAA) Employment Rules. Either party may initiate arbitration by filing a written demand with AAA within one year of the dispute arising. The arbitrator's decision is final and binding.",
+    "Arbitration Process: The arbitration shall be conducted by a single arbitrator mutually agreed upon by both parties. If no agreement is reached within 30 days, AAA will appoint an arbitrator. Each party bears its own attorney fees unless the arbitrator awards fees to the prevailing party. The arbitration hearing must be held within 90 days of the arbitrator's appointment.",
+    "Arbitration Costs: The company will pay the arbitrator's fees and administrative costs for claims up to $75,000. For claims exceeding $75,000, costs are split equally between parties. Filing fees are capped at $250 for employees, with the company covering any excess.",
+    "Subrogation Rights: In workers' compensation cases, the company retains full subrogation rights to recover payments from third parties responsible for employee injuries. Employees must cooperate with subrogation efforts and cannot settle claims with third parties without written company consent.",
+    "Subrogation Process: When the company exercises subrogation rights, it will pursue recovery from liable third parties through negotiation or litigation. Any recovered amounts are first applied to reimburse the company for benefits paid, then attorney fees and costs, with any remainder paid to the employee.",
+    "Health Insurance Subrogation: Health plan subrogation applies when injuries result from third-party negligence (e.g., auto accidents). The plan has first priority lien on settlements or judgments. Employees must notify HR within 30 days of any third-party claim and execute required subrogation documents.",
+    "Disability Claims Arbitration: Long-term disability claim denials may be appealed through arbitration under ERISA regulations. Appeals must be filed within 180 days of denial. The arbitrator reviews the administrative record and medical evidence to determine if the denial was arbitrary or capricious."
+]
+
 
 # Helper: add sample documents with dedup by deterministic IDs
 def _add_sample_documents_dedup() -> int:
@@ -386,6 +397,34 @@ def load_sample_hr_documents():
     qa_system.add_documents(docs, metas, ids=sel_ids)
     stats = qa_system.get_collection_stats()
     return f"✅ Loaded {len(docs)} HR policy documents. Total documents: {stats['total_documents']}"
+
+
+def load_sample_arbitration_subrogation_documents():
+    """Load arbitration and subrogation policy sample documents (idempotent)"""
+    ids = [f"arb_subrog_doc_{i}" for i in range(len(ARBITRATION_SUBROGATION_SAMPLE_DOCUMENTS))]
+    metadata = [{"source": ids[i], "domain": "legal", "topic": "Arbitration/Subrogation"} for i in range(len(ARBITRATION_SUBROGATION_SAMPLE_DOCUMENTS))]
+
+    # Determine which ones already exist
+    existing_ids = set()
+    try:
+        got = qa_system.collection.get(ids=ids)
+        if got and isinstance(got.get("ids", None), list):
+            existing_ids = set(got["ids"])
+    except Exception:
+        existing_ids = set()
+
+    to_add_idx = [i for i, _id in enumerate(ids) if _id not in existing_ids]
+    if not to_add_idx:
+        stats = qa_system.get_collection_stats()
+        return f"ℹ️ Arbitration/Subrogation documents already loaded. Total documents: {stats['total_documents']}"
+
+    docs = [ARBITRATION_SUBROGATION_SAMPLE_DOCUMENTS[i] for i in to_add_idx]
+    metas = [metadata[i] for i in to_add_idx]
+    sel_ids = [ids[i] for i in to_add_idx]
+
+    qa_system.add_documents(docs, metas, ids=sel_ids)
+    stats = qa_system.get_collection_stats()
+    return f"✅ Loaded {len(docs)} Arbitration/Subrogation documents. Total documents: {stats['total_documents']}"
 
 
 def add_custom_document(text: str):
@@ -531,6 +570,29 @@ with gr.Blocks(title="Document Q&A System", theme=gr.themes.Soft()) as demo:
                     outputs=question_input
                 )
         
+        gr.Markdown("**Arbitration & Subrogation Questions:** _(Load Arbitration/Subrogation docs first)_")
+        arb_subrog_questions = [
+            "What is the company's arbitration policy?",
+            "How long do I have to file an arbitration claim?",
+            "Who pays for arbitration costs?",
+            "What are the company's subrogation rights?",
+            "How does health insurance subrogation work?"
+        ]
+        
+        with gr.Row():
+            for q in arb_subrog_questions[:3]:
+                gr.Button(q, size="sm").click(
+                    lambda x=q: x,
+                    outputs=question_input
+                )
+        
+        with gr.Row():
+            for q in arb_subrog_questions[3:]:
+                gr.Button(q, size="sm").click(
+                    lambda x=q: x,
+                    outputs=question_input
+                )
+        
         ask_btn.click(
             ask_question,
             inputs=[question_input, num_context_slider],
@@ -545,6 +607,7 @@ with gr.Blocks(title="Document Q&A System", theme=gr.themes.Soft()) as demo:
                 gr.Markdown("#### Load Sample Documents")
                 load_sample_btn = gr.Button("📥 Load Sample AI/ML Documents", variant="primary")
                 load_hr_btn = gr.Button("📥 Load Sample HR Policy Documents")
+                load_arb_subrog_btn = gr.Button("📥 Load Sample Arbitration/Subrogation Documents")
                 load_status = gr.Textbox(label="Status", interactive=False)
                 
                 load_sample_btn.click(
@@ -553,6 +616,10 @@ with gr.Blocks(title="Document Q&A System", theme=gr.themes.Soft()) as demo:
                 )
                 load_hr_btn.click(
                     load_sample_hr_documents,
+                    outputs=load_status
+                )
+                load_arb_subrog_btn.click(
+                    load_sample_arbitration_subrogation_documents,
                     outputs=load_status
                 )
             
