@@ -111,6 +111,41 @@ def _seed_hr_data_fallback(db_obj: DatabaseManager):
         # Silent fallback; actual DatabaseManager.seed_hr_data should handle the full dataset
         pass
 
+
+def _get_hr_payroll_series_fallback(db_obj: DatabaseManager) -> pd.DataFrame:
+    """Read payroll time series from SQLite directly and return ['date','value'].
+    If the table is missing/empty, seed minimal data and retry.
+    """
+    conn = getattr(db_obj, 'conn', None)
+    if conn is None:
+        # Return empty DataFrame with expected columns
+        return pd.DataFrame({"date": pd.to_datetime([]), "value": []})
+    try:
+        ts_df_local = pd.read_sql_query(
+            "SELECT month as date, payroll_amount as value FROM hr_payroll_timeseries ORDER BY month",
+            conn,
+        )
+        if ts_df_local.empty:
+            _seed_hr_data_fallback(db_obj)
+            ts_df_local = pd.read_sql_query(
+                "SELECT month as date, payroll_amount as value FROM hr_payroll_timeseries ORDER BY month",
+                conn,
+            )
+        ts_df_local['date'] = pd.to_datetime(ts_df_local['date'].astype(str).str[:10])
+        return ts_df_local
+    except Exception:
+        # Ensure tables exist then retry once
+        _seed_hr_data_fallback(db_obj)
+        try:
+            ts_df_local = pd.read_sql_query(
+                "SELECT month as date, payroll_amount as value FROM hr_payroll_timeseries ORDER BY month",
+                conn,
+            )
+            ts_df_local['date'] = pd.to_datetime(ts_df_local['date'].astype(str).str[:10])
+            return ts_df_local
+        except Exception:
+            return pd.DataFrame({"date": pd.to_datetime([]), "value": []})
+
 # Sidebar
 st.sidebar.title("🚀 Rapid Insights")
 st.sidebar.markdown("**Simulates:** Snowflake Cortex AI")
@@ -564,7 +599,10 @@ elif page == "👥 HR Analytics":
         st.subheader("📈 Payroll Forecast (Monthly Totals)")
         forecast_months = st.slider("Forecast months", 1, 12, 6)
         try:
-            ts_df = db.get_hr_payroll_series()
+            if hasattr(db, "get_hr_payroll_series"):
+                ts_df = db.get_hr_payroll_series()
+            else:
+                ts_df = _get_hr_payroll_series_fallback(db)
             st.caption(f"Historical periods: {len(ts_df)} months")
             if len(ts_df) > 3:
                 with st.spinner("Forecasting payroll totals..."):
