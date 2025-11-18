@@ -163,22 +163,38 @@ Question: {question}
 
 Answer:"""
         
-        # Generate response
+        # Generate response with better stopping criteria
         try:
             response = self.llm(
                 prompt,
                 max_new_tokens=max_new_tokens,
                 num_return_sequences=1,
-                temperature=0.7
+                temperature=0.7,
+                top_p=0.9,
+                repetition_penalty=1.2,
+                do_sample=True,
+                eos_token_id=self.tokenizer.eos_token_id,
+                pad_token_id=self.tokenizer.eos_token_id
             )
             
             # Extract answer (remove prompt)
             full_text = response[0]['generated_text']
             answer = full_text[len(prompt):].strip()
             
+            # Stop at first newline pair or "Question:" to prevent loops
+            if '\n\n' in answer:
+                answer = answer.split('\n\n')[0].strip()
+            if 'Question:' in answer:
+                answer = answer.split('Question:')[0].strip()
+            if 'Answer:' in answer and answer.count('Answer:') > 1:
+                # Take only first answer if multiple appear
+                parts = answer.split('Answer:')
+                answer = parts[1].strip() if len(parts) > 1 else answer
+            
             # Clean up answer
-            if not answer:
-                answer = "I couldn't generate a specific answer based on the context."
+            if not answer or len(answer) < 10:
+                # Fallback: extract key info from context directly
+                answer = f"Based on the documents: {context_docs[0][:200]}..."
             
             return answer
             
