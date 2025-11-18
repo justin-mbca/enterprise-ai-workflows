@@ -271,30 +271,27 @@ class DatabaseManager:
         return out
     
     def _simple_forecast(self, df: pd.DataFrame, periods: int) -> pd.DataFrame:
-        """Simple linear forecast fallback"""
-        # Calculate linear trend (ensure 1D arrays to avoid broadcasting bugs)
-        X = np.arange(len(df), dtype=float)  # shape (n,)
+        """Simple linear forecast anchored at last observed value"""
         y = df['value'].values.astype(float)
-
-        # Simple linear regression (least squares)
+        y_last = float(y[-1])
+        
+        # Calculate slope from linear regression
+        X = np.arange(len(df), dtype=float)
         X_mean = X.mean()
         y_mean = y.mean()
-        # Covariance(X, y) / Variance(X)
         numerator = ((X - X_mean) * (y - y_mean)).sum()
         denominator = ((X - X_mean) ** 2).sum()
         slope = (numerator / denominator) if denominator != 0 else 0.0
 
-        # If slope numerically ~0, use recent momentum (median of last diffs)
+        # If slope ~0, use recent momentum
         if abs(slope) < 1e-9 and len(y) >= 2:
-            diffs = np.diff(y[-min(7, len(y)):])
+            recent = y[-min(7, len(y)):]
+            diffs = np.diff(recent)
             if diffs.size > 0:
                 slope = float(np.median(diffs))
-
-        # Calibrate intercept so the line passes near the last observed value
-        y_last = float(y[-1])
-        intercept = y_last - slope * (len(df) - 1)
         
-        # Generate forecast
+        # Build forecast starting exactly at last observed value
+        # forecast[i] = y_last + slope * (i+1) for i in [0, periods-1]
         last_date = df['date'].iloc[-1]
         forecast_dates = pd.date_range(
             start=last_date + timedelta(days=1),
@@ -302,8 +299,8 @@ class DatabaseManager:
             freq='D'
         )
         
-        forecast_X = np.arange(len(df), len(df) + periods, dtype=float)
-        forecast_y = slope * forecast_X + intercept
+        forecast_steps = np.arange(1, periods + 1, dtype=float)
+        forecast_y = y_last + slope * forecast_steps
         
         # Use volatility of recent changes for bounds
         diffs = np.diff(y)
