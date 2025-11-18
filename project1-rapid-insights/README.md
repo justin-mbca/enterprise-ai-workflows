@@ -6,10 +6,40 @@ Live app: https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app
 
 A Streamlit app that simulates Snowflake Cortex AI capabilities using open-source tools.
 
-- Sentiment Analysis (TextBlob)
-- Time Series Forecast (simple linear fallback; Prophet optional if available)
-- SQL Playground with custom AI SQL functions (SQLite UDFs)
-- HR & Payroll Analytics (sample HR tables, payroll forecasting, survey sentiment, SQL UDFs for tenure and overtime)
+## Features
+
+### 📊 Time Series Forecasting
+- **Simulates Snowflake `ML_FORECAST()` function**
+- Intelligent trend detection:
+  - **Upward/Downward trends**: Recent-window slope calculation for accurate momentum-based forecasts
+  - **Seasonal patterns**: Automatic pattern detection and naive seasonal forecasting (repeats last cycle)
+- Anchored forecasts that start at the last observed value for visual continuity
+- Confidence intervals based on historical volatility
+- Prophet integration optional (falls back to optimized linear/seasonal methods)
+
+### 💬 Sentiment Analysis
+- **Simulates Snowflake `SENTIMENT()` function**
+- Uses TextBlob for natural language sentiment scoring
+- Available as SQL UDF: `SELECT sentiment_analysis(text_column) FROM table`
+
+### 📝 Text Summarization
+- **Simulates Snowflake `SUMMARIZE()` function**
+- Extractive summarization using sentence ranking
+- Available as SQL UDF: `SELECT summarize_text(text_column) FROM table`
+
+### 🧑‍💼 HR & Payroll Analytics
+- Sample HR datasets: employees, payroll timeseries, survey feedback
+- Payroll forecasting with monthly trend visualization
+- Department sentiment analysis from survey feedback
+- Custom SQL UDFs:
+  - `tenure_days(hire_date, term_date)` - Calculate employee tenure
+  - `overtime_flag(avg_week_hours)` - Flag overtime workers (>40 hrs)
+- Interactive SQL playground with HR-specific sample queries
+
+### 🔧 SQL Playground
+- Execute custom SQL queries against SQLite database
+- Pre-loaded with AI functions as SQLite UDFs
+- Sample queries for sentiment analysis, summarization, and HR analytics
 
 ## Local Run
 
@@ -36,6 +66,20 @@ Or open the already deployed app here:
 
 - https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app
 
-Notes:
-- We intentionally removed Prophet from requirements to avoid build issues. The app will fallback to a simple forecast if Prophet isn’t available.
-- If you want Prophet, add it back to requirements and set up the proper build environment (may take longer and occasionally fail on hosted environments).
+## Technical Notes
+
+### Forecasting Implementation
+- **Trend forecasting**: Uses recent-window (last 30 points) linear regression for better momentum capture
+- **Seasonal forecasting**: Detects pure oscillations and repeats last 60-day cycle pattern
+- **Smart fallback**: Automatically selects appropriate method based on data characteristics
+- **Prophet optional**: Removed from default requirements to avoid build issues; optimized fallback methods work great for demos
+
+### HR Analytics
+- All HR data is sample/synthetic for demonstration purposes
+- Uses SQLite UDFs for efficient in-database computation
+- Forecasting uses momentum-based monthly projection for cleaner visualizations
+
+### Cache Management
+- DatabaseManager cached with `@st.cache_resource` for performance
+- Version marker forces cache invalidation on code updates
+- Graceful fallback handles cache incompatibilities during deployments

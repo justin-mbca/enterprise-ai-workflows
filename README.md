@@ -94,12 +94,13 @@ pip install -r requirements.txt
 
 ### Project 1: Rapid Insights Workflow
 **Simulates:** Snowflake Cortex AI  
-**Tech Stack:** Python, SQLite, Streamlit, TextBlob, Prophet  
+**Tech Stack:** Python, SQLite, Streamlit, TextBlob, NumPy  
 **Features:**
-- SQL-based sentiment analysis
-- Time series forecasting
-- Interactive analytics dashboard
-- Real-time data visualization
+- 📊 **Advanced Time Series Forecasting**: Intelligent trend detection with recent-window slope calculation and automatic seasonal pattern recognition
+- 💬 **SQL-based Sentiment Analysis**: TextBlob integration via SQLite UDFs
+- 📝 **Text Summarization**: Extractive summarization accessible through SQL
+- 🧑‍💼 **HR & Payroll Analytics**: Sample datasets with payroll forecasting, employee tenure tracking, and overtime detection
+- 🎨 **Interactive Dashboard**: Real-time visualizations with Plotly
 
 **Run it:**
 ```bash
@@ -107,7 +108,12 @@ cd project1-rapid-insights
 streamlit run app.py
 ```
 
-Live app: https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app
+**Live app:** https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app
+
+**Key Innovations:**
+- Momentum-based forecasting for trending data (captures recent patterns)
+- Naive seasonal forecasting for cyclical data (repeats patterns intelligently)
+- Smart cache management with version markers for seamless updates
 
 ### Project 2: Enterprise MLOps Pipeline
 **Simulates:** Azure ML, Dataiku  
