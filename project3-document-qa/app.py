@@ -455,7 +455,9 @@ with gr.Blocks(title="Document Q&A System", theme=gr.themes.Soft()) as demo:
         
         # Sample questions
         gr.Markdown("### 💡 Try these sample questions:")
-        sample_questions = [
+        
+        gr.Markdown("**AI/ML Questions:**")
+        ai_ml_questions = [
             "What is machine learning?",
             "Explain deep learning",
             "What is the transformer architecture?",
@@ -464,14 +466,37 @@ with gr.Blocks(title="Document Q&A System", theme=gr.themes.Soft()) as demo:
         ]
         
         with gr.Row():
-            for q in sample_questions[:3]:
+            for q in ai_ml_questions[:3]:
                 gr.Button(q, size="sm").click(
                     lambda x=q: x,
                     outputs=question_input
                 )
         
         with gr.Row():
-            for q in sample_questions[3:]:
+            for q in ai_ml_questions[3:]:
+                gr.Button(q, size="sm").click(
+                    lambda x=q: x,
+                    outputs=question_input
+                )
+        
+        gr.Markdown("**HR & Payroll Questions:** _(Load HR sample docs first)_")
+        hr_questions = [
+            "What is the overtime policy?",
+            "When is payroll processed?",
+            "How does PTO accrue?",
+            "What's the benefits eligibility threshold?",
+            "What documentation is required for FMLA?"
+        ]
+        
+        with gr.Row():
+            for q in hr_questions[:3]:
+                gr.Button(q, size="sm").click(
+                    lambda x=q: x,
+                    outputs=question_input
+                )
+        
+        with gr.Row():
+            for q in hr_questions[3:]:
                 gr.Button(q, size="sm").click(
                     lambda x=q: x,
                     outputs=question_input
