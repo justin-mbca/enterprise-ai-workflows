@@ -275,20 +275,28 @@ class DatabaseManager:
         y = df['value'].values.astype(float)
         y_last = float(y[-1])
         
-        # Calculate slope from linear regression
+        # Calculate slope from linear regression on full series
         X = np.arange(len(df), dtype=float)
         X_mean = X.mean()
         y_mean = y.mean()
         numerator = ((X - X_mean) * (y - y_mean)).sum()
         denominator = ((X - X_mean) ** 2).sum()
-        slope = (numerator / denominator) if denominator != 0 else 0.0
+        slope_full = (numerator / denominator) if denominator != 0 else 0.0
 
-        # If slope ~0, use recent momentum
-        if abs(slope) < 1e-9 and len(y) >= 2:
-            recent = y[-min(7, len(y)):]
-            diffs = np.diff(recent)
-            if diffs.size > 0:
-                slope = float(np.median(diffs))
+        # Also calculate recent slope (last 30 points or 20% of data)
+        recent_window = max(min(30, len(y) // 5), 7)
+        if len(y) >= recent_window:
+            X_recent = np.arange(recent_window, dtype=float)
+            y_recent = y[-recent_window:]
+            X_r_mean = X_recent.mean()
+            y_r_mean = y_recent.mean()
+            num_r = ((X_recent - X_r_mean) * (y_recent - y_r_mean)).sum()
+            den_r = ((X_recent - X_r_mean) ** 2).sum()
+            slope_recent = (num_r / den_r) if den_r != 0 else slope_full
+            # Prefer recent slope if it's significant
+            slope = slope_recent if abs(slope_recent) > 0.01 else slope_full
+        else:
+            slope = slope_full
         
         # Build forecast starting exactly at last observed value
         # forecast[i] = y_last + slope * (i+1) for i in [0, periods-1]
