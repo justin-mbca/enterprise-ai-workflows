@@ -157,17 +157,28 @@ class DocumentQASystem:
         if not context_docs:
             return "No relevant information found in the documents."
         
+        # Detect document topic from context to provide accurate intro
+        first_context = context_docs[0].lower()
+        if 'arbitration' in first_context or 'subrogation' in first_context:
+            doc_type = "arbitration and subrogation policy documents"
+        elif any(term in first_context for term in ['payroll', 'pto', 'overtime', 'benefits', 'fmla', 'expense', 'performance review']):
+            doc_type = "HR policy documents"
+        elif any(term in first_context for term in ['machine learning', 'deep learning', 'nlp', 'mlops', 'docker', 'kubernetes', 'cloud']):
+            doc_type = "technical documents"
+        else:
+            doc_type = "documents"
+        
         # Prepare a clear, factual response from the context
         context = "\n\n".join([f"**Source {i+1}:** {doc}" for i, doc in enumerate(context_docs[:2])])
         
         # For simple factual questions, just return the context with light formatting
-        # This is more reliable than generative models for HR policy questions
+        # This is more reliable than generative models for policy questions
         question_lower = question.lower()
-        factual_keywords = ['when', 'what', 'how much', 'how many', 'policy', 'payroll', 'benefits', 'pto', 'overtime', 'fmla']
+        factual_keywords = ['when', 'what', 'how much', 'how many', 'policy', 'payroll', 'benefits', 'pto', 'overtime', 'fmla', 'arbitration', 'subrogation']
         
         if any(keyword in question_lower for keyword in factual_keywords):
-            # Return context directly with a simple intro
-            return f"Based on the HR policy documents:\n\n{context}"
+            # Return context directly with document-type-specific intro
+            return f"Based on the {doc_type}:\n\n{context}"
         
         # For other questions, try generation with strict controls
         prompt = f"""Answer this question using only the information provided. Be concise and factual.
@@ -207,13 +218,13 @@ Answer:"""
                 any(year in answer for year in ['2017', '2018', '2019']) or  # Hallucinated dates
                 'webinar' in answer.lower() or 'reddit' in answer.lower()):  # Hallucinated content
                 # Fall back to context
-                return f"Based on the HR policy documents:\n\n{context}"
+                return f"Based on the {doc_type}:\n\n{context}"
             
             return answer
             
         except Exception as e:
             logger.error("Error generating answer: %s", e)
-            return f"Based on the HR policy documents:\n\n{context}"
+            return f"Based on the {doc_type}:\n\n{context}"
     
     def answer_question(
         self,
