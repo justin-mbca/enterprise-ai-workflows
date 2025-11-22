@@ -1,0 +1,10 @@
+apache-airflow==2.10.2
+# Core transformations & modeling
+SQLAlchemy<2.0  # airflow constraint sometimes; pinned by airflow but explicit for clarity
+dbt-core==1.8.4
+# Data + embeddings stack
+duckdb==1.0.0
+chromadb==0.5.3
+sentence-transformers==2.7.0
+# Data quality validation
+great-expectations==0.18.12

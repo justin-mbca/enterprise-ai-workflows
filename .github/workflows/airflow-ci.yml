@@ -1,0 +1,81 @@
+name: Airflow Data Platform Pipeline (Demo)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '15 5 * * *'  # 05:15 UTC daily (after local 05:00 DAG schedule)
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    env:
+      AIRFLOW_HOME: ${{ github.workspace }}/airflow
+      REPO_ROOT: ${{ github.workspace }}
+      CHROMA_DIR: ${{ github.workspace }}/project3-document-qa/chroma_store
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Airflow & dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r airflow/requirements-airflow.txt
+          # Show versions for provenance
+          pip freeze | grep -E 'apache-airflow|dbt-core|duckdb|chromadb|sentence-transformers|great-expectations'
+
+      - name: Initialize Airflow metadata DB
+        run: |
+          airflow db init
+          airflow variables set REPO_ROOT "$REPO_ROOT"
+          airflow variables set CHROMA_DIR "$CHROMA_DIR"
+
+      - name: List DAGs
+        run: airflow dags list
+
+      - name: Validate DAG loading
+        run: airflow dags show data_platform_pipeline --save dags_graph.png
+
+      - name: Run tasks sequentially via `airflow tasks test`
+        run: |
+          EXEC_DATE=$(date +%Y-%m-%d)
+          set -e
+          airflow tasks test data_platform_pipeline dbt_seed "$EXEC_DATE"
+          airflow tasks test data_platform_pipeline dbt_run "$EXEC_DATE"
+          airflow tasks test data_platform_pipeline dbt_test "$EXEC_DATE"
+          airflow tasks test data_platform_pipeline ge_document_index_validation "$EXEC_DATE"
+          airflow tasks test data_platform_pipeline refresh_embeddings "$EXEC_DATE"
+          airflow tasks test data_platform_pipeline doc_vector_count_check "$EXEC_DATE"
+
+      - name: Upload DAG graph artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: airflow-dag-graph
+          path: dags_graph.png
+
+      - name: Upload Chroma store (demo)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chroma_store
+          path: project3-document-qa/chroma_store
+
+      - name: Upload Great Expectations validation results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ge-validation-results
+          path: great_expectations/uncommitted/validations/
+
+      - name: Job summary
+        run: |
+          echo "## Airflow Pipeline Run Summary" >> $GITHUB_STEP_SUMMARY
+          echo "All tasks executed via airflow tasks test for execution date $(date +%Y-%m-%d)." >> $GITHUB_STEP_SUMMARY
+          echo "**Pipeline steps:** dbt seed → dbt run → dbt test → GE validation → refresh embeddings → count check." >> $GITHUB_STEP_SUMMARY
+          echo "Artifacts: DAG graph + Chroma store + GE validation results." >> $GITHUB_STEP_SUMMARY

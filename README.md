@@ -38,7 +38,9 @@ This repository contains three production-ready projects that demonstrate enterp
 
 - **MLOps Best Practices** - Experiment tracking, model registry, deployment
 - **Data Analytics** - SQL, Python, real-time dashboards
+- **Data Modeling & Quality** - dbt transformations, Great Expectations validation
 - **LLM Applications** - RAG pipelines, vector databases, embeddings
+- **Workflow Orchestration** - Airflow DAGs, quality gates, backfills
 - **Cloud Architecture** - Scalable, production-ready patterns
 - **DevOps** - Docker, CI/CD, containerization
 
@@ -61,6 +63,20 @@ enterprise-ai-workflows/
 │   ├── app.py                      # Gradio interface
 │   ├── rag_pipeline.py             # Vector search + LLM
 │   └── requirements.txt
+│
+├── data-platform/                  # Data modeling + analytics
+│   ├── dbt/                        # dbt project (seeds, staging, marts)
+│   ├── analytics_dashboard.py      # Streamlit BI dashboard
+│   └── README.md
+│
+├── great_expectations/             # Data quality validation
+│   ├── expectations/               # Expectation suites
+│   ├── checkpoints/                # Validation checkpoints
+│   └── README.md
+│
+├── airflow/                        # Optional orchestration layer
+│   ├── dags/                       # DAG definitions
+│   └── README.md
 │
 └── docs/                           # Additional documentation
     ├── setup-guide.md
@@ -295,11 +311,67 @@ Tabs: Overview, HR Policies, Arbitration Timelines, Document Index (export CSV/J
 4. **Deploy publicly** - Show working demos in interviews
 5. **Write blog posts** - Explain your implementation decisions
 
+### Data Platform & Quality Layer
+This repo now includes **Great Expectations** for formal data quality validation:
+- **Suite:** `great_expectations/expectations/document_index_suite.json` validates row counts, schema, domain values, text length bounds, and source lineage.
+- **Checkpoint:** `great_expectations/checkpoints/document_index_checkpoint.yml` runs the suite against the `document_index` mart (DuckDB).
+- **Airflow Integration:** `ge_document_index_validation` task gates embedding refresh—only proceeds if quality checks pass.
+- **CI:** GitHub Actions workflow executes GE checkpoint before building vector store.
+
+**Why it matters (interview framing):**
+- Prevents semantic drift (e.g., unexpected domain "finance" stops embeddings).
+- Demonstrates shift-left testing + SLA enforcement.
+- Shows understanding of governance beyond structural dbt tests.
+
+**Run GE checkpoint locally:**
+```bash
+cd great_expectations
+REPO_ROOT=$(pwd)/.. great_expectations checkpoint run document_index_checkpoint
+```
+
 ### Data Platform Next Steps (Optional)
 - Add dbt metrics + semantic layer for standardized KPIs.
-- Introduce Great Expectations for additional data quality validation.
+- Expand GE with statistical distribution checks (e.g., detect sudden text length shifts).
 - Schedule embedding refresh via GitHub Actions to auto-sync RAG corpus.
 - Add Lightdash/Evidence for richer BI exploration.
+
+## 🛠 Optional: Airflow Orchestration Layer
+
+If you want to demonstrate orchestration proficiency (e.g., for roles listing Airflow experience), this repo includes an optional Apache Airflow DAG that models a multi-step data & AI preparation pipeline.
+
+**DAG:** `airflow/dags/data_platform_pipeline.py`
+
+**Pipeline Steps:**
+1. `dbt_seed` – Load seed CSVs into DuckDB
+2. `dbt_run` – Build staging + marts (including `document_index`)
+3. `dbt_test` – Enforce data quality (relationships, not_null, accepted_values)
+4. `refresh_embeddings` – Rebuild persistent Chroma store from curated mart
+5. `doc_vector_count_check` – Assert vector count matches document count
+
+**Why It Matters (Interview Framing):**
+- Shows canonical dataset construction & semantic enrichment.
+- Demonstrates quality gates before downstream AI tasks.
+- Illustrates daily scheduling & potential SLAs (05:00 UTC run window).
+- Easy to extend with alerts, backfills, dynamic task mapping, and retraining branches.
+
+**Quick Local Demo:**
+```bash
+export AIRFLOW_HOME="$(pwd)/airflow"
+python -m venv venv && source venv/bin/activate
+pip install -r airflow/requirements-airflow.txt
+airflow db init
+airflow variables set REPO_ROOT "$(pwd)"
+airflow standalone  # UI at http://localhost:8080
+```
+
+**Backfill Example:**
+```bash
+airflow dags backfill data_platform_pipeline -s 2025-11-15 -e 2025-11-22
+```
+
+**Portfolio Note:** Airflow is optional—keeping GitHub Actions shows pragmatic minimalism, while the DAG demonstrates readiness for more complex orchestration when scale/SLAs require it.
+
+**CI Showcase:** A GitHub Actions workflow (`.github/workflows/airflow-ci.yml`) installs Airflow and executes each DAG task via `airflow tasks test` (no scheduler needed) on push and a daily cron. Artifacts include the rendered DAG graph and the generated Chroma store.
 
 ## 🌐 Website
 

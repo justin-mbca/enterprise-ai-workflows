@@ -1,0 +1,5 @@
+# Great Expectations uncommitted artifacts
+uncommitted/
+*.pyc
+__pycache__/
+.ipynb_checkpoints/

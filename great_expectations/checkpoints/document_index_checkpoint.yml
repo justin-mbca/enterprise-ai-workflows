@@ -1,0 +1,23 @@
+name: document_index_checkpoint
+config_version: 1.0
+class_name: SimpleCheckpoint
+run_name_template: "%Y%m%d-%H%M%S-document_index"
+validations:
+  - batch_request:
+      datasource_name: duckdb_warehouse
+      data_connector_name: default_runtime_data_connector
+      data_asset_name: document_index
+      runtime_parameters:
+        query: |
+          SELECT doc_id, domain, text, source_table
+          FROM main_marts.document_index
+      batch_identifiers:
+        default_identifier_name: daily_run
+    expectation_suite_name: document_index_suite
+action_list:
+  - name: store_validation_result
+    action:
+      class_name: StoreValidationResultAction
+  - name: update_data_docs
+    action:
+      class_name: UpdateDataDocsAction
