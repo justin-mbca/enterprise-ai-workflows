@@ -1,0 +1,57 @@
+name: Full Pipeline (dbt + Quality + Embeddings)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'scripts/run_full_pipeline.sh'
+      - 'data-platform/dbt/**'
+      - 'project3-document-qa/**'
+      - 'README.md'
+      - 'data-platform/README.md'
+      - '.github/workflows/full-pipeline.yml'
+  schedule:
+    - cron: '30 05 * * *'  # Daily 05:30 UTC
+
+jobs:
+  run-full-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install dbt-core dbt-duckdb great-expectations chromadb sentence-transformers streamlit
+
+      - name: Run full pipeline script
+        run: |
+          chmod +x scripts/run_full_pipeline.sh
+          ./scripts/run_full_pipeline.sh
+
+      - name: Upload artifacts (warehouse, embeddings, dbt docs)
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-pipeline-artifacts
+          path: |
+            data-platform/dbt/warehouse/data.duckdb
+            project3-document-qa/chroma_store
+            data-platform/dbt/target
+
+      - name: Summarize outcome
+        run: |
+          echo "### Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "* Date: $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "* Warehouse file size:" >> $GITHUB_STEP_SUMMARY
+          ls -lh data-platform/dbt/warehouse/data.duckdb >> $GITHUB_STEP_SUMMARY || echo "warehouse missing" >> $GITHUB_STEP_SUMMARY
+          echo "* Vector store directory size:" >> $GITHUB_STEP_SUMMARY
+          du -sh project3-document-qa/chroma_store >> $GITHUB_STEP_SUMMARY 2>/dev/null || echo "no store" >> $GITHUB_STEP_SUMMARY

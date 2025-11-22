@@ -82,10 +82,49 @@ Workflow: `.github/workflows/dbt-daily.yml`
 
 ## Next Enhancements
 - dbt metrics & semantic layer for KPI standardization
-- Great Expectations integration for richer validation
+- Extend Great Expectations / semantic checks beyond `document_index` (additional marts)
 - Automated embedding refresh in CI (Space sync)
 - Vector reranking (e.g., Cohere / cross-encoder) for improved relevance
 - Lightdash or Evidence for advanced BI consumption
+
+## One-Command Full Pipeline (Data → Quality → Embeddings)
+For daily development or quick demos you can execute the entire sequence (dbt seed/run/test → semantic quality validations → embedding refresh → verification) with a single script at repo root:
+
+```bash
+./scripts/run_full_pipeline.sh
+```
+
+What it does:
+1. Builds all seeds and models (staging + marts) using the local DuckDB profile (`data-platform/dbt/profiles.yml`).
+2. Executes all dbt tests (structural quality: not_null, unique, relationships, accepted_values).
+3. Runs semantic data checks (row count bounds, schema conformity, uniqueness, length ranges) acting as a lightweight Great Expectations gate.
+4. Rebuilds the persistent Chroma vector store from the curated `document_index` mart.
+5. Verifies embedding count matches document count.
+
+Sample (abridged) output:
+```
+📥 STEP 1: dbt seed            ✅ Seeds loaded (3)
+🏗️  STEP 2: dbt run             ✅ 6 models built
+🧪 STEP 3: dbt test            ✅ 18 tests passed
+🔍 STEP 4: Quality Gate        ✅ All semantic checks passed
+🧬 STEP 5: Refresh Embeddings  ✅ 21 embeddings stored
+✔️  STEP 6: Verify Vector Store ✅ 21 documents
+🎉 PIPELINE COMPLETE!
+```
+
+Artifacts produced automatically:
+- `data-platform/dbt/warehouse/data.duckdb`
+- `project3-document-qa/chroma_store/` (persistent embeddings)
+- `data-platform/dbt/target/` (dbt docs & manifest)
+
+When to use script vs manual steps:
+- Use the script for rapid iteration, demos, or CI reproducibility.
+- Use manual steps when debugging a specific phase (e.g., only re-running `dbt test`).
+
+Interview talking point:
+> "I implemented a one-command pipeline that embeds structural (dbt) and semantic validations before generating embeddings—ensuring high-integrity data flows into the AI layer."
+
+CI Integration (optional): A GitHub Actions workflow (`full-pipeline.yml`) can invoke this script on push + cron and publish artifacts for inspection.
 
 ## Why DuckDB?
 DuckDB offers zero configuration, versionable analytical artifacts, and works well in CI. For a cloud warehouse variant, the same models can target Postgres or BigQuery with profile changes.
