@@ -138,6 +138,16 @@ flowchart TD
     W2E --> F
     W3D --> F
     W3E --> F
+
+    %% ========== DATA PLATFORM EXTENSION ==========
+    subgraph DP [Data Platform Extension]
+        DP1[dbt Core<br>Staging & Marts] --> DP2[DuckDB Warehouse]
+        DP2 --> DP3[Document Index Mart]<br>
+        DP3 --> DP4[Embedding Refresh Script]
+        DP4 --> W3B
+        DP3 --> DP5[Analytics Dashboard<br>Streamlit]
+    end
+    D --> DP1
     
     subgraph F [Demo Applications]
         direction TB
@@ -162,6 +172,9 @@ flowchart TD
 | **AI Services** | HuggingFace + SentenceTransformers | Local AI models | **$0** |
 | **Monitoring** | Prometheus + Grafana | Observability | **$0** |
 | **Deployment** | FastAPI + Docker | API serving | **$0** |
+| **Data Modeling** | dbt Core + DuckDB | Curated semantic layer | **$0** |
+| **Vector Store Persistence** | ChromaDB (PersistentClient) | Reusable embeddings | **$0** |
+| **Analytics BI** | Streamlit Dashboard | Mart KPIs & corpus exploration | **$0** |
 | **Total** | | | **$0** |
 
 ---
@@ -173,6 +186,8 @@ flowchart TD
 - **Compute Layer** - Scalable processing
 - **Orchestration Layer** - Workflow management
 - **Serving Layer** - Application delivery
+- **Semantic Layer** - dbt-curated transformations enabling consistent downstream consumption (RAG + BI)
+- **Embedding Layer** - Deterministic refresh pipeline linking marts to vector store
 
 ### 2. Fit-for-Purpose Tool Selection
 - **Rapid prototyping** - SQL-based analytics
@@ -200,6 +215,8 @@ flowchart TD
 | **Model Deployment** | Azure ML Endpoints | FastAPI | ✅ Same REST API |
 | **Orchestration** | Dataiku | Docker Compose + Jupyter | ✅ Same workflow logic |
 | **Vector Search** | Snowflake + Cortex | ChromaDB + pgvector | ✅ Same embedding concepts |
+| **Semantic Modeling** | dbt Cloud / Fabric | dbt Core + DuckDB | ✅ Same transformation lineage |
+| **BI / Analytics** | Power BI / Tableau | Streamlit Dashboard | ✅ Same KPI surfacing |
 | **LLM Integration** | Azure OpenAI | HuggingFace Transformers | ✅ Same prompt engineering |
 | **Monitoring** | Azure Monitor | Prometheus + Grafana | ✅ Same metrics |
 | **Data Governance** | Fabric + Snowflake | PostgreSQL + Git | ⚠️ Simplified but conceptually similar |
@@ -213,6 +230,7 @@ flowchart TD
 - ✅ **Full control** - Run everything locally
 - ✅ **Transparent** - See all the "magic" under the hood
 - ✅ **Transferable** - Concepts apply directly to enterprise tools
+- ✅ **Composable** - Extend base architecture with semantic + vector + BI layers without rework
 
 ### For Portfolio:
 - ✅ **Demonstrates understanding** of enterprise architecture
@@ -231,6 +249,10 @@ This repository implements all three workflows:
 
 ```
 enterprise-ai-workflows/
+├── data-platform/                # dbt + DuckDB + embeddings refresh + analytics dashboard
+│   ├── dbt/                      # Seeds, staging, marts, tests
+│   ├── analytics_dashboard.py    # Streamlit BI over marts
+│   └── README.md / README_DASHBOARD.md
 ├── project1-rag-application/      # Workflow 3: LLM & Knowledge Mining
 ├── project2-mlops-pipeline/       # Workflow 2: Enterprise MLOps
 ├── project3-rapid-insights/       # Workflow 1: Rapid Analytics (Coming Soon)
@@ -245,6 +267,9 @@ enterprise-ai-workflows/
 1. **Start with Project 2 (MLOps)** - Core ML lifecycle
 2. **Move to Project 1 (RAG)** - Modern LLM applications
 3. **Add Project 3 (Analytics)** - SQL-based insights
+4. **Integrate Data Platform** - dbt transformations & semantic layer
+5. **Connect RAG to dbt** - Embedding refresh from `document_index` mart
+6. **Add BI Dashboard** - KPI & corpus exploration
 
 Each project demonstrates different aspects of the enterprise architecture while using the same underlying patterns.
 
@@ -260,6 +285,8 @@ Each project demonstrates different aspects of the enterprise architecture while
 | **Microsoft Fabric** | PostgreSQL + Delta Lake | Same unified data storage concept |
 | **Snowflake AI Foundry** | ChromaDB + HuggingFace | Same model registry and inference patterns |
 | **Azure OpenAI** | Open-source LLMs (Llama, Mistral) | Same prompting and API patterns |
+| **dbt Cloud / Fabric Semantic Layer** | dbt Core + DuckDB | Same governed transformation & lineage |
+| **Power BI / Tableau** | Streamlit Analytics Dashboard | Same KPI visualization & ad-hoc exploration |
 
 ---
 
@@ -289,9 +316,12 @@ When discussing this architecture:
 - [Project 1: RAG Application](./project1-rag-application/README.md)
 - [Project 2: MLOps Pipeline](./project2-mlops-pipeline/README.md)
 - [Setup Notes: MLflow 3.6.0 Fixes](./project2-mlops-pipeline/SETUP_NOTES.md)
+- [Data Platform README](./data-platform/README.md)
+- [Analytics Dashboard](./data-platform/README_DASHBOARD.md)
+- [Embedding Refresh Script](./scripts/refresh_embeddings.py)
 
 ---
 
 **Built to demonstrate enterprise AI architecture patterns using open-source tools** 🚀
 
-*Last updated: November 16, 2025*
+*Last updated: November 22, 2025*
