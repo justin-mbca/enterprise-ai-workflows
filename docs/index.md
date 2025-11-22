@@ -42,6 +42,15 @@ Showcase of three production-inspired projects you can run for free.
    - Live demo: https://huggingface.co/spaces/zhangju2023/document-qa-rag
    - Code: https://github.com/justin-mbca/enterprise-ai-workflows/tree/main/project3-document-qa
 
+## Data & Pipeline Artifacts
+
+- Daily Full Pipeline (dbt + quality + embeddings): See latest published summary
+  - Summary Report: /pipeline/pipeline_report.html
+  - Raw dbt Docs: /pipeline/dbt/index.html (lineage & model metadata)
+  - Manifest & Catalog: /pipeline/dbt/manifest.json, /pipeline/dbt/catalog.json
+
+These pages auto-update via GitHub Actions after the full pipeline workflow runs (`full-pipeline.yml`).
+
 ## About
 
 This site is a static showcase hosted on GitHub Pages. For Project 2, the running app is hosted on Hugging Face Spaces (Docker) or GitHub Codespaces; this site links to those live environments.

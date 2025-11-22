@@ -1,0 +1,63 @@
+name: Publish Pipeline Artifacts to Pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'scripts/run_full_pipeline.sh'
+      - 'data-platform/dbt/**'
+      - 'project3-document-qa/**'
+      - '.github/workflows/publish-pipeline-docs.yml'
+  schedule:
+    - cron: '15 06 * * *'  # Daily 06:15 UTC after full-pipeline cron
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install dbt-core dbt-duckdb chromadb sentence-transformers
+
+      - name: Run pipeline (build data & embeddings)
+        run: |
+          chmod +x scripts/run_full_pipeline.sh
+          ./scripts/run_full_pipeline.sh > pipeline_run.log 2>&1 || echo "pipeline exited with code $?" >> pipeline_run.log
+
+      - name: Generate dbt docs
+        run: |
+          cd data-platform/dbt
+          dbt docs generate --quiet
+
+      - name: Prepare Pages artifact
+        run: |
+          mkdir -p public/pipeline/dbt
+          cp data-platform/dbt/target/index.html public/pipeline/dbt/index.html || true
+          cp data-platform/dbt/target/manifest.json public/pipeline/dbt/manifest.json || true
+          cp data-platform/dbt/target/catalog.json public/pipeline/dbt/catalog.json || true
+          python scripts/generate_pipeline_report.py public/pipeline/pipeline_report.html pipeline_run.log || echo "report generation failed"
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
