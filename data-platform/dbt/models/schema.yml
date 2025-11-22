@@ -1,0 +1,66 @@
+version: 2
+
+models:
+  - name: stg_hr_policy
+    description: Staging HR policy seed data.
+    columns:
+      - name: policy_id
+        tests: [not_null, unique]
+      - name: category
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['PTO','Overtime','Payroll','Benefits','FMLA','Expense','Performance']
+      - name: raw_text
+        tests: [not_null]
+
+  - name: stg_arbitration_subrogation
+    description: Staging arbitration & subrogation documents.
+    columns:
+      - name: doc_id
+        tests: [not_null, unique]
+      - name: category
+        tests:
+          - not_null
+      - name: raw_text
+        tests: [not_null]
+
+  - name: stg_ml_concepts
+    description: Staging ML concept documents.
+    columns:
+      - name: concept_id
+        tests: [not_null, unique]
+      - name: topic
+        tests: [not_null]
+      - name: raw_text
+        tests: [not_null]
+
+  - name: hr_policy_features
+    description: Derived HR policy feature flags.
+    columns:
+      - name: policy_id
+        tests: [not_null]
+      - name: accrual_days_per_month
+        description: PTO accrual (should be 1.67 for PTO category)
+        tests:
+          - relationships:
+              to: stg_hr_policy
+              field: policy_id
+      - name: mentions_overtime
+        tests: []
+
+  - name: arbitration_timelines
+    description: Extracted arbitration timelines.
+    columns:
+      - name: doc_id
+        tests: [not_null]
+      - name: filing_deadline_days
+        tests: []
+
+  - name: document_index
+    description: Unified document index across domains for RAG.
+    columns:
+      - name: id
+        tests: [not_null]
+      - name: domain
+        tests: [not_null]

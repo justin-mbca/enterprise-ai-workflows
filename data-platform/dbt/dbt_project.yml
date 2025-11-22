@@ -1,0 +1,19 @@
+name: enterprise_ai_data_platform
+version: 1.0.0
+config-version: 2
+
+profile: enterprise_ai_duckdb
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+analysis-paths: ["analysis"]
+
+models:
+  enterprise_ai_data_platform:
+    +materialized: view
+    staging:
+      +schema: staging
+    marts:
+      +schema: marts

@@ -1,0 +1,57 @@
+name: dbt daily pipeline
+
+on:
+  push:
+    paths:
+      - 'data-platform/dbt/**'
+      - 'scripts/refresh_embeddings.py'
+  schedule:
+    - cron: '0 6 * * *'  # 6 AM UTC daily
+
+jobs:
+  dbt-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dbt & deps
+        run: |
+          pip install dbt-core dbt-duckdb duckdb chromadb sentence-transformers
+
+      - name: Prepare profiles
+        run: |
+          mkdir -p ~/.dbt
+          cp data-platform/dbt/profiles_template.yml ~/.dbt/profiles.yml
+
+      - name: dbt seed/run/test
+        working-directory: data-platform/dbt
+        run: |
+          dbt seed --threads 4
+          dbt run --threads 4
+          dbt test --threads 4
+
+      - name: Generate dbt docs
+        working-directory: data-platform/dbt
+        run: dbt docs generate
+
+      - name: Publish dbt docs to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: data-platform/dbt/target
+          destination_dir: dbt-docs
+
+      - name: Refresh embeddings (placeholder)
+        run: python scripts/refresh_embeddings.py
+
+      - name: Optional - Upload RAG Space
+        if: env.HF_TOKEN != ''
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          echo "Skipping Space upload placeholder (implement if needed)."
