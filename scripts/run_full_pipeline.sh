@@ -101,6 +101,19 @@ else
     exit 1
 fi
 
+# Optional: Generate Great Expectations Data Docs (will create HTML under great_expectations/uncommitted/data_docs)
+if command -v great_expectations >/dev/null 2>&1; then
+    echo -e "${BLUE}🗂  Generating Great Expectations Data Docs...${NC}"
+    (cd "$REPO_ROOT/great_expectations" && REPO_ROOT="$REPO_ROOT" great_expectations checkpoint run document_index_checkpoint >/dev/null 2>&1 || echo -e "${YELLOW}⚠️  GE CLI checkpoint failed; Data Docs may be missing${NC}")
+    if [ -d "$REPO_ROOT/great_expectations/uncommitted/data_docs/local_site" ]; then
+        echo -e "${GREEN}✅ Data Docs generated${NC}\n"
+    else
+        echo -e "${YELLOW}⚠️  Data Docs directory not found${NC}\n"
+    fi
+else
+    echo -e "${YELLOW}⚠️  great_expectations CLI not installed; skipping Data Docs generation${NC}\n"
+fi
+
 # Step 5: Refresh embeddings (build vector store)
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${BLUE}🧬 STEP 5: Refresh Embeddings - Build vector store${NC}"

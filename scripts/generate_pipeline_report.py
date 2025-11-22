@@ -59,6 +59,11 @@ else:
     html.append("<p class='fail'>Log file not found.</p>")
 
 html.append("<p><a href='/'>Back to Site Index</a></p>")
+docs_path = Path('great_expectations/uncommitted/data_docs/local_site/index.html')
+if docs_path.exists():
+    html.insert(3, "<p class='ok'>Great Expectations Data Docs generated: <a href='/pipeline/ge/index.html'>view</a></p>")
+else:
+    html.insert(3, "<p class='fail'>Great Expectations Data Docs not found.</p>")
 html.append("</body></html>")
 out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text('\n'.join(html), encoding='utf-8')

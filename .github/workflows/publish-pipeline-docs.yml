@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install dbt-core dbt-duckdb chromadb sentence-transformers
+          pip install dbt-core dbt-duckdb chromadb sentence-transformers great-expectations
 
       - name: Run pipeline (build data & embeddings)
         run: |
@@ -51,6 +51,13 @@ jobs:
           cp data-platform/dbt/target/index.html public/pipeline/dbt/index.html || true
           cp data-platform/dbt/target/manifest.json public/pipeline/dbt/manifest.json || true
           cp data-platform/dbt/target/catalog.json public/pipeline/dbt/catalog.json || true
+          # Copy Great Expectations Data Docs if present
+          if [ -d great_expectations/uncommitted/data_docs/local_site ]; then \
+            mkdir -p public/pipeline/ge; \
+            cp -R great_expectations/uncommitted/data_docs/local_site/* public/pipeline/ge/; \
+          else \
+            echo "GE Data Docs not found"; \
+          fi
           python scripts/generate_pipeline_report.py public/pipeline/pipeline_report.html pipeline_run.log || echo "report generation failed"
 
       - name: Upload artifact

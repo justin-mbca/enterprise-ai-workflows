@@ -48,6 +48,7 @@ Showcase of three production-inspired projects you can run for free.
   - Summary Report: /pipeline/pipeline_report.html
   - Raw dbt Docs: /pipeline/dbt/index.html (lineage & model metadata)
   - Manifest & Catalog: /pipeline/dbt/manifest.json, /pipeline/dbt/catalog.json
+  - Great Expectations Data Docs: /pipeline/ge/index.html
 
 These pages auto-update via GitHub Actions after the full pipeline workflow runs (`full-pipeline.yml`).
 
