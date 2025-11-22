@@ -141,11 +141,11 @@ flowchart TD
 
     %% ========== DATA PLATFORM EXTENSION ==========
     subgraph DP [Data Platform Extension]
-        DP1[dbt Core<br>Staging & Marts] --> DP2[DuckDB Warehouse]
-        DP2 --> DP3[Document Index Mart]<br>
+        DP1[dbt Core<br/>Staging & Marts] --> DP2[DuckDB Warehouse]
+        DP2 --> DP3[Document Index Mart]
         DP3 --> DP4[Embedding Refresh Script]
         DP4 --> W3B
-        DP3 --> DP5[Analytics Dashboard<br>Streamlit]
+        DP3 --> DP5[Analytics Dashboard<br/>Streamlit]
     end
     D --> DP1
     
