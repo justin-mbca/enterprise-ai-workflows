@@ -32,6 +32,7 @@ This repository contains three production-ready projects that demonstrate enterp
 1. **Rapid Insights Workflow** - SQL-based analytics with AI capabilities
 2. **Enterprise MLOps Pipeline** - Complete ML lifecycle management
 3. **Document Q&A System** - RAG-based LLM application
+4. **Data Platform & Analytics** - dbt-powered curated corpus + Streamlit dashboard feeding RAG & BI layers
 
 ## 🎯 What You'll Learn
 
@@ -89,6 +90,31 @@ source venv/bin/activate  # On macOS/Linux
 cd project1-rapid-insights
 pip install -r requirements.txt
 ```
+
+### End-to-End (Data → Embeddings → RAG → Analytics)
+
+```bash
+# Build curated data (dbt transformations)
+cd data-platform/dbt
+dbt seed && dbt run && dbt test
+
+# Refresh vector store from document_index mart
+cd ../../
+python scripts/refresh_embeddings.py --persist-dir project3-document-qa/chroma_store --reset
+
+# Launch RAG application (consumes persistent Chroma store if present)
+cd project3-document-qa
+python app.py  # http://localhost:7860
+
+# Launch analytics dashboard (BI view on marts)
+cd ../data-platform
+streamlit run analytics_dashboard.py  # http://localhost:8502
+```
+
+Artifacts produced:
+- DuckDB warehouse: `data-platform/dbt/warehouse/data.duckdb`
+- Vector store: `project3-document-qa/chroma_store/` (persistent embeddings)
+- Dashboard app: `data-platform/analytics_dashboard.py`
 
 ## 📊 Project Details
 
@@ -180,6 +206,33 @@ python app.py
 
 Live app: https://huggingface.co/spaces/zhangju2023/document-qa-rag
 
+#### Integrated Data Platform Features
+- Curated `document_index` mart (dbt) unifies HR, legal (arbitration & subrogation), and ML concept texts.
+- Embedding refresh script (`scripts/refresh_embeddings.py`) builds a persistent Chroma store from dbt output.
+- RAG app auto-detects persistent store and skips sample preload for production-like behavior.
+- Analytics dashboard (`data-platform/analytics_dashboard.py`) visualizes mart KPIs (policy features, arbitration deadlines, document distribution).
+
+#### Embedding Refresh Workflow
+```bash
+cd data-platform/dbt
+dbt seed && dbt run
+cd ../../
+python scripts/refresh_embeddings.py --persist-dir project3-document-qa/chroma_store --reset
+```
+Then start the app:
+```bash
+cd project3-document-qa
+export CHROMA_PERSIST_DIR="project3-document-qa/chroma_store"  # optional
+python app.py
+```
+
+#### Analytics Dashboard
+```bash
+cd data-platform
+streamlit run analytics_dashboard.py
+```
+Tabs: Overview, HR Policies, Arbitration Timelines, Document Index (export CSV/JSON).
+
 ## 💰 Cost Breakdown
 
 | Component | Enterprise Tool | Free Alternative | Savings |
@@ -188,6 +241,7 @@ Live app: https://huggingface.co/spaces/zhangju2023/document-qa-rag
 | MLOps Platform | Azure ML ($1000+/year) | MLflow + Docker | $1000+ |
 | Low-code ML | Dataiku ($50k+/year) | Jupyter + Streamlit | $50k+ |
 | LLM API | Azure OpenAI ($100+/month) | Open models (local) | $1200+ |
+| Data Modeling | Commercial Data Platforms ($1000+) | dbt Core + DuckDB | $1000+ |
 | **Total** | **$54,200+/year** | **$0** | **$54,200+** |
 
 ## 🎯 Interview Talking Points
@@ -241,6 +295,12 @@ Live app: https://huggingface.co/spaces/zhangju2023/document-qa-rag
 4. **Deploy publicly** - Show working demos in interviews
 5. **Write blog posts** - Explain your implementation decisions
 
+### Data Platform Next Steps (Optional)
+- Add dbt metrics + semantic layer for standardized KPIs.
+- Introduce Great Expectations for additional data quality validation.
+- Schedule embedding refresh via GitHub Actions to auto-sync RAG corpus.
+- Add Lightdash/Evidence for richer BI exploration.
+
 ## 🌐 Website
 
 Static showcase (GitHub Pages): If Pages is enabled for this repo using the `/docs` folder, visit:
@@ -261,6 +321,8 @@ MIT License - Free to use for personal and commercial projects
 - [Setup Guide](docs/setup-guide.md) - Detailed installation instructions
 - [Interview Prep](docs/interview-prep.md) - Common questions and answers
 - [Architecture Decisions](docs/architecture-decisions.md) - Why we chose each tool
+- [Data Platform README](data-platform/README.md) - dbt & embedding integration details
+- [Analytics Dashboard](data-platform/README_DASHBOARD.md) - BI layer usage
 
 ---
 
