@@ -127,6 +127,43 @@ cd ../data-platform
 streamlit run analytics_dashboard.py  # http://localhost:8502
 ```
 
+### One-Command Full Pipeline (dbt + Quality Gates + Embeddings)
+Instead of running each step manually, you can execute the entire data & AI preparation workflow with a single script that:
+
+1. Seeds and builds dbt models (staging + marts)
+2. Runs all dbt tests (structural quality)
+3. Performs semantic data quality checks (row count, schema, uniqueness, text length bounds)
+4. Refreshes the Chroma vector store from the curated `document_index` mart
+5. Verifies the vector store document count
+
+Run from the repo root:
+```bash
+./scripts/run_full_pipeline.sh
+```
+
+Prerequisites (first time only):
+```bash
+pip install dbt-core dbt-duckdb great-expectations chromadb sentence-transformers streamlit
+```
+
+Sample output (abridged):
+```
+📥 STEP 1: dbt seed            ✅ Seeds loaded
+🏗️  STEP 2: dbt run             ✅ 6 models built
+🧪 STEP 3: dbt test            ✅ 18 tests passed
+🔍 STEP 4: Quality Gate        ✅ All semantic checks passed
+🧬 STEP 5: Refresh Embeddings  ✅ 21 embeddings stored
+✔️  STEP 6: Verify Vector Store ✅ 21 documents
+🎉 PIPELINE COMPLETE!
+```
+
+Artifacts produced:
+- DuckDB warehouse: `data-platform/dbt/warehouse/data.duckdb`
+- Persistent vector store: `project3-document-qa/chroma_store/`
+- dbt docs site (build): `data-platform/dbt/target/index.html`
+
+Use this script as an interview talking point for "end-to-end workflow orchestration with embedded quality gates" (even without Airflow).
+
 Artifacts produced:
 - DuckDB warehouse: `data-platform/dbt/warehouse/data.duckdb`
 - Vector store: `project3-document-qa/chroma_store/` (persistent embeddings)

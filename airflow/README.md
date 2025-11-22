@@ -23,6 +23,13 @@ Schedule: Daily at 05:00 UTC (adjust `schedule_interval`).
 
 **Data Quality Gate (NEW):** The GE task validates semantic contracts (domain in ["hr", "legal", "technical"], text length 50-20000 chars, no nulls). If validation fails, the pipeline stops before refreshing embeddings, preventing corrupted vector representations.
 
+## Script Alternative (No Scheduler Needed)
+If you just want to showcase the end-to-end workflow locally without bringing up Airflow, use:
+```bash
+./scripts/run_full_pipeline.sh
+```
+That single command executes dbt (seed/run/test), semantic quality checks, embedding refresh, and vector store verification—mirroring the DAG sequence. Use Airflow when you need scheduling, retries, SLAs, or lineage tracking.
+
 ## Setup (Local Demo)
 ```bash
 # From repo root

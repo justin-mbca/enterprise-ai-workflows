@@ -30,6 +30,27 @@ python app.py
 # Then open http://localhost:7860
 ```
 
+## One-Command Full Platform Bootstrap
+If you want the RAG app to use the fully curated corpus (dbt marts + semantic quality checks + refreshed embeddings) run the root pipeline script first:
+
+```bash
+./scripts/run_full_pipeline.sh
+```
+
+This performs:
+- dbt seed / run / test
+- Semantic data validations (Great Expectations-style manual checks)
+- Embedding refresh into `project3-document-qa/chroma_store`
+- Vector store verification
+
+Then launch the app directly (will detect the persisted store and skip sample loads):
+```bash
+cd project3-document-qa
+python app.py
+```
+
+To rebuild after changing source seeds or dbt logic, just rerun the script.
+
 Live app: https://huggingface.co/spaces/zhangju2023/document-qa-rag
 
 ## Try it online (3 steps)
