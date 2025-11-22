@@ -39,13 +39,14 @@ models:
     description: Derived HR policy feature flags.
     columns:
       - name: policy_id
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_hr_policy')
+              field: policy_id
       - name: accrual_days_per_month
         description: PTO accrual (should be 1.67 for PTO category)
-        tests:
-          - relationships:
-              to: stg_hr_policy
-              field: policy_id
+        tests: []
       - name: mentions_overtime
         tests: []
 

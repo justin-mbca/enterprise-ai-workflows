@@ -11,6 +11,7 @@ from transformers import pipeline, AutoTokenizer
 from typing import List, Dict, Tuple
 import os
 from datetime import datetime
+import socket
 import logging
 
 # Configure logging
@@ -39,20 +40,26 @@ class DocumentQASystem:
         self.embedding_model = SentenceTransformer(embedding_model_name)
         
         # Initialize ChromaDB
-        logger.info("Initializing ChromaDB...")
-        self.chroma_client = chromadb.Client(Settings(
-            anonymized_telemetry=False,
-            allow_reset=True
-        ))
+        logger.info("Initializing ChromaDB (persistent if available)...")
+        # Resolve persistent directory: env or local folder next to this file
+        persist_dir_env = os.getenv("CHROMA_PERSIST_DIR")
+        persist_dir = persist_dir_env if persist_dir_env else os.path.join(os.path.dirname(__file__), "chroma_store")
+        use_persistent = os.path.isdir(persist_dir) and any(os.scandir(persist_dir))
+        if use_persistent:
+            logger.info("Using persistent directory: %s", persist_dir)
+            self.chroma_client = chromadb.PersistentClient(path=persist_dir, settings=Settings(anonymized_telemetry=False))
+        else:
+            logger.info("Persistent dir not found (%s); falling back to in-memory client", persist_dir)
+            self.chroma_client = chromadb.Client(Settings(anonymized_telemetry=False, allow_reset=True))
         
         # Create or get collection
         try:
+            self.collection = self.chroma_client.get_collection(collection_name)
+        except Exception:
             self.collection = self.chroma_client.create_collection(
                 name=collection_name,
                 metadata={"description": "Document knowledge base"}
             )
-        except Exception:
-            self.collection = self.chroma_client.get_collection(name=collection_name)
         
         # Initialize LLM
         logger.info("Loading language model: %s", llm_model_name)
@@ -367,8 +374,16 @@ def _preload_sample_documents_if_empty():
         logger.warning("Could not preload sample documents: %s", e)
 
 
-# Execute preload at import/startup
-_preload_sample_documents_if_empty()
+def _persistent_store_present() -> bool:
+    persist_dir_env = os.getenv("CHROMA_PERSIST_DIR")
+    persist_dir = persist_dir_env if persist_dir_env else os.path.join(os.path.dirname(__file__), "chroma_store")
+    return os.path.isdir(persist_dir) and any(os.scandir(persist_dir))
+
+# Execute preload only if persistent store not already populated
+if not _persistent_store_present():
+    _preload_sample_documents_if_empty()
+else:
+    logger.info("🔒 Persistent Chroma store detected; skipping sample preload.")
 
 
 # Gradio Interface Functions
@@ -724,9 +739,22 @@ if __name__ == "__main__":
     print("🛠️ Tech: ChromaDB + SentenceTransformers + HuggingFace")
     print("=" * 60)
     
+    # Dynamic port selection fallback
+    desired_port = int(os.getenv("GRADIO_SERVER_PORT", "7860"))
+    port = desired_port
+    for _ in range(10):  # try up to 10 sequential ports
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(("0.0.0.0", port))
+                s.close()
+                break  # port is free
+            except OSError:
+                port += 1
+    if port != desired_port:
+        print(f"⚠️ Port {desired_port} busy; using fallback port {port}")
     demo.launch(
         server_name="0.0.0.0",
-        server_port=7860,
+        server_port=port,
         share=False,
         show_error=True
     )

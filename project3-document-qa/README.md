@@ -24,6 +24,8 @@ A RAG (Retrieval-Augmented Generation) application using:
 ```bash
 cd project3-document-qa
 pip install -r requirements.txt
+export CHROMA_PERSIST_DIR="project3-document-qa/chroma_store"  # optional; defaults internally
+python ../scripts/refresh_embeddings.py --persist-dir "$CHROMA_PERSIST_DIR" --reset
 python app.py
 # Then open http://localhost:7860
 ```
@@ -92,3 +94,55 @@ Notes:
 - First build may take a while to download models.
 - You can switch to a lighter LLM in `app.py` (e.g., `sshleifer/tiny-gpt2`) if needed.
 - For production, consider larger models via Inference Endpoints or OpenAI with an API key.
+
+## Embedding Refresh (dbt-integrated)
+
+The RAG layer can ingest curated documents produced by the dbt data platform (`document_index` mart).
+
+### Pre-requisites
+1. Run dbt to build the `document_index` view:
+   ```bash
+   cd data-platform/dbt
+   dbt seed && dbt run
+   ```
+2. Ensure the DuckDB file exists at `data-platform/dbt/warehouse/data.duckdb`.
+
+### Build / Rebuild Vector Store
+```bash
+export CHROMA_PERSIST_DIR="project3-document-qa/chroma_store"  # choose any directory
+python scripts/refresh_embeddings.py --persist-dir "$CHROMA_PERSIST_DIR" --reset
+```
+
+Flags:
+- `--reset` (optional): clears existing collection before loading
+- `--limit N` (optional): ingest only first N rows for quick tests
+- `--duckdb PATH`: override DuckDB file location
+- `--collection NAME`: change Chroma collection name (default: `documents`)
+
+### Launch App Using Persisted Embeddings
+```bash
+cd project3-document-qa
+export CHROMA_PERSIST_DIR="project3-document-qa/chroma_store"
+python app.py
+```
+
+At startup the app detects a persistent store and **skips adding sample documents**, using the dbt-derived corpus instead.
+
+### Updating Embeddings After dbt Changes
+If you modify source seeds or transformation logic:
+```bash
+cd data-platform/dbt
+dbt seed && dbt run
+cd ../../
+python scripts/refresh_embeddings.py --persist-dir "$CHROMA_PERSIST_DIR" --reset
+```
+
+### Common Issues
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `DuckDB file not found` | dbt not executed | Run `dbt seed && dbt run` |
+| Empty collection after refresh | `document_index` view missing | Confirm model name and rerun dbt |
+| App still shows sample docs | Persist dir not set or empty | Export `CHROMA_PERSIST_DIR` and rebuild embeddings |
+| Duplicate ID errors | Re-running without `--reset` and changed IDs | Use `--reset` for full rebuild |
+
+---

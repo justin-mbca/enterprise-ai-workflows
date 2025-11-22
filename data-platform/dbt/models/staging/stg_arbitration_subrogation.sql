@@ -1,6 +1,6 @@
 -- Staging model for arbitration & subrogation seed
 WITH source AS (
-  SELECT * FROM {{ seed('arbitration_subrogation') }}
+  SELECT * FROM {{ ref('arbitration_subrogation') }}
 )
 SELECT
   doc_id,

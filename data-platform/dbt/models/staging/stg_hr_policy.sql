@@ -1,6 +1,6 @@
 -- Staging model for HR policy seed
 WITH source AS (
-  SELECT * FROM {{ seed('hr_policy') }}
+  SELECT * FROM {{ ref('hr_policy') }}
 )
 SELECT
   policy_id,

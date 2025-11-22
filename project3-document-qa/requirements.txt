@@ -12,6 +12,7 @@ sentence-transformers
 transformers>=4.35.0
 torch
 huggingface_hub<1.0
+duckdb
 
 # Data Processing
 pandas
