@@ -38,6 +38,20 @@ jobs:
           chmod +x scripts/run_full_pipeline.sh
           ./scripts/run_full_pipeline.sh
 
+      - name: Slack notify on failure
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          python scripts/slack_notify.py "Full pipeline FAILED on $GITHUB_SHA (run $GITHUB_RUN_ID). See Actions logs." failure
+
+      - name: Slack notify on success
+        if: success()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          python scripts/slack_notify.py "Full pipeline succeeded on $GITHUB_SHA (run $GITHUB_RUN_ID)." success
+
       - name: Upload artifacts (warehouse, embeddings, dbt docs)
         uses: actions/upload-artifact@v4
         with:

@@ -348,6 +348,24 @@ Tabs: Overview, HR Policies, Arbitration Timelines, Document Index (export CSV/J
 4. **Deploy publicly** - Show working demos in interviews
 5. **Write blog posts** - Explain your implementation decisions
 
+### 🔔 Alerts (CI + Data Quality)
+This repo includes Slack alert integration at two layers:
+
+- **CI Pipeline (GitHub Actions)**: `.github/workflows/full-pipeline.yml` posts a message on success or failure after running the end-to-end script.
+- **Data Quality Gate (Semantic / GE)**: `scripts/run_full_pipeline.sh` sends a Slack alert if the semantic validation (Great Expectations + manual checks) fails before embedding refresh.
+
+Setup:
+1. Create an Incoming Webhook in your Slack workspace.
+2. Add the webhook URL as a GitHub repository secret named `SLACK_WEBHOOK_URL` (Settings → Secrets and variables → Actions).
+3. (Optional) For local testing, export the variable before running the script:
+  ```bash
+  export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/XXX/YYY/ZZZ"
+  ./scripts/run_full_pipeline.sh
+  ```
+
+Alert script: `scripts/slack_notify.py` (emoji prefixes for success, failure, warning).
+To extend alerts (e.g., only on failure, include failed expectation names), update the workflow or wrap the GE validation with a custom Python script that enumerates failing expectations.
+
 ### Data Platform & Quality Layer
 This repo now includes **Great Expectations** for formal data quality validation:
 - **Suite:** `great_expectations/expectations/document_index_suite.json` validates row counts, schema, domain values, text length bounds, and source lineage.

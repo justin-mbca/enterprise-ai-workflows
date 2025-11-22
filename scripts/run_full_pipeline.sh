@@ -98,6 +98,9 @@ if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ Great Expectations validation passed${NC}\n"
 else
     echo -e "${RED}❌ Quality gate failed - stopping pipeline${NC}"
+        if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            python3 "$REPO_ROOT/scripts/slack_notify.py" "Quality gate failed during pipeline run (dbt + semantic checks) at commit $(git -C "$REPO_ROOT" rev-parse --short HEAD)." failure || true
+        fi
     exit 1
 fi
 
