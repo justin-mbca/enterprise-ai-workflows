@@ -465,9 +465,9 @@ REPO_ROOT=$(pwd)/.. great_expectations checkpoint run document_index_checkpoint
 - Schedule embedding refresh via GitHub Actions to auto-sync RAG corpus.
 - Add Lightdash/Evidence for richer BI exploration.
 
-## 🛠 Optional: Airflow Orchestration Layer
+## 🛠 Airflow Orchestration Layer
 
-If you want to demonstrate orchestration proficiency (e.g., for roles listing Airflow experience), this repo includes an optional Apache Airflow DAG that models a multi-step data & AI preparation pipeline.
+This portfolio implements Apache Airflow orchestration to demonstrate production-grade workflow management for multi-step data and AI pipelines.
 
 **DAG:** `airflow/dags/data_platform_pipeline.py`
 
@@ -478,11 +478,12 @@ If you want to demonstrate orchestration proficiency (e.g., for roles listing Ai
 4. `refresh_embeddings` – Rebuild persistent Chroma store from curated mart
 5. `doc_vector_count_check` – Assert vector count matches document count
 
-**Why This Matters:**
-- Shows canonical dataset construction & semantic enrichment.
-- Demonstrates quality gates before downstream AI tasks.
-- Illustrates daily scheduling & potential SLAs (05:00 UTC run window).
-- Easy to extend with alerts, backfills, dynamic task mapping, and retraining branches.
+**Key Technical Highlights:**
+- **Workflow Orchestration:** 6-step DAG with explicit dependencies and quality gates
+- **Data Quality Integration:** Great Expectations validation gates embedding refresh
+- **Scheduled Execution:** Daily runs at 05:00 UTC with configurable SLAs
+- **Production Patterns:** Retry logic, configurable paths, artifact validation
+- **CI/CD Integration:** GitHub Actions workflow validates DAG on every push
 
 **Quick Local Demo:**
 ```bash
@@ -499,9 +500,11 @@ airflow standalone  # UI at http://localhost:8080
 airflow dags backfill data_platform_pipeline -s 2025-11-15 -e 2025-11-22
 ```
 
-**Portfolio Note:** Airflow is optional—keeping GitHub Actions shows pragmatic minimalism, while the DAG demonstrates readiness for more complex orchestration when scale/SLAs require it.
-
-**CI Showcase:** A GitHub Actions workflow (`.github/workflows/airflow-ci.yml`) installs Airflow and executes each DAG task via `airflow tasks test` (no scheduler needed) on push and a daily cron. Artifacts include the rendered DAG graph and the generated Chroma store.
+**Automated CI/CD:** GitHub Actions workflow (`.github/workflows/airflow-ci.yml`) runs on every push and daily at 05:15 UTC:
+- Validates DAG structure and task dependencies
+- Executes full pipeline via `airflow tasks test` (no scheduler needed)
+- Uploads artifacts: DAG graph visualization, Chroma store, GE validation results
+- Posts pipeline execution summary to GitHub Actions summary page
 
 ## 🌐 Website
 
