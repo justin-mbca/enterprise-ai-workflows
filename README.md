@@ -337,29 +337,7 @@ Tabs: Overview, HR Policies, Arbitration Timelines, Document Index (export CSV/J
 **For Problem-Solving Questions:**
 > "When building my RAG pipeline, I optimized vector search performance by [specific solution]. This taught me [learning outcome]."
 
-## 📚 Learning Path
-
-### Week 1-2: Project 1 (Rapid Insights)
-- Learn SQL-based analytics
-- Implement AI functions
-- Build interactive dashboards
-
-### Week 3-4: Project 2 (MLOps)
-- Set up experiment tracking
-- Implement model lifecycle
-- Deploy via REST API
-
-### Week 5-6: Project 3 (Document Q&A)
-- Work with embeddings
-- Build vector search
-- Create LLM application
-
-### Week 7-8: Polish & Deploy
-- Add CI/CD pipelines
-- Write comprehensive docs
-- Deploy to free hosting
-
-## 🔗 Free Resources Used
+##  Free Resources Used
 
 - **Datasets:** Kaggle, UCI ML Repository
 - **Models:** Hugging Face Hub
