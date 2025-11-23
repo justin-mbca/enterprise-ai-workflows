@@ -345,7 +345,7 @@ Tabs: Overview, HR Policies, Arbitration Timelines, Document Index (export CSV/J
 - **Compute:** Google Colab, Kaggle Notebooks
 - **Version Control:** GitHub (free tier)
 
-## 🌟 Next Steps
+## �️ Implementation Phases
 
 ### ✅ Phase 1 Reliability Foundations (Completed)
 Phase 1 established baseline governance and transparency artifacts:
@@ -393,13 +393,6 @@ Phase 3 adds interpretability and reliability features for production-grade data
 - Slack integration with `--failures-file` = actionable incident response (enumerate root causes).
 
 Validated: drift/anomaly scripts run successfully; baselines initialized; pipeline integration tested.
-
-
-1. **Start with Project 1** - Easiest to set up and run
-2. **Document your learnings** - Keep notes on challenges and solutions
-3. **Customize for your domain** - Use data relevant to your target industry
-4. **Deploy publicly** - Share working demos to showcase capabilities
-5. **Write blog posts** - Explain your implementation decisions
 
 ### 🔔 Alerts (CI + Data Quality)
 This repo includes Slack alert integration at two layers:
