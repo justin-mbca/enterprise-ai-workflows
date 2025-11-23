@@ -326,7 +326,7 @@ When discussing this architecture:
    - Built-in drift detection and anomaly monitoring
    - Statistical gates prevent bad data from propagating
    - Proactive validation catches issues before users do
-   - Demonstrates interpretability and safety mindset (aligned with Anthropic values)
+   - Demonstrates interpretability and safety-minded engineering approach
 
 5. **"I can learn new tools quickly"**
    - Proof: I built this architecture by understanding documentation

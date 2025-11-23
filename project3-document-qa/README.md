@@ -166,4 +166,21 @@ python scripts/refresh_embeddings.py --persist-dir "$CHROMA_PERSIST_DIR" --reset
 | App still shows sample docs | Persist dir not set or empty | Export `CHROMA_PERSIST_DIR` and rebuild embeddings |
 | Duplicate ID errors | Re-running without `--reset` and changed IDs | Use `--reset` for full rebuild |
 
+## Slack Alerts (Optional)
+If you want runtime notifications (e.g., embedding refresh success or quality gate failure) you can reuse the root script `scripts/slack_notify.py`:
+
+```bash
+export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/XXX/YYY/ZZZ"
+python3 scripts/slack_notify.py "Embeddings refreshed" --level success
+python3 scripts.slack_notify.py "Quality gate failed" --level error --failures-file /tmp/failures.json
+```
+
+Supported flags (see root `README.md` for full docs):
+- `--level success|error|warning|info` for severity emoji
+- `--failures-file PATH` append lines / JSON list of failures
+- `--no-emoji` disable emoji prefix
+- `--raw-json PATH` send custom JSON payload
+
+If emojis appear corrupted (garbled characters), ensure your terminal uses UTF-8 locale or omit them with `--no-emoji`.
+
 ---

@@ -43,36 +43,8 @@ This repository contains three production-ready projects that demonstrate enterp
 - **Workflow Orchestration** - Airflow DAGs, quality gates, backfills
 - **Cloud Architecture** - Scalable, production-ready patterns
 - **DevOps** - Docker, CI/CD, containerization
-
-## 🤖 Anthropic Analytics Data Engineer - Portfolio Alignment
-
-**This portfolio demonstrates key competencies for Anthropic's mission:**
-
-### ✅ Reliability & Interpretability
-- **Drift Detection** ([check_embedding_drift.py](./scripts/check_embedding_drift.py)) - L2 norm monitoring detects when model behavior changes
-- **Anomaly Detection** ([check_row_count_anomaly.py](./scripts/check_row_count_anomaly.py)) - Z-score statistical checks catch data quality issues
-- **Data Lineage** ([data-lineage.md](./docs/data-lineage.md)) - Mermaid diagrams trace data flow from source → serving for transparency
-- **Blocking Safety Gates** - Pipeline fails on critical drift to prevent bad data propagation
-
-### ✅ Self-Serve Analytics Enablement
-- **dbt Semantic Layer** ([data-platform/dbt/](./data-platform/dbt/)) - 7 models, 23 tests, staging → marts architecture
-- **Metrics Catalog** ([METRICS.md](./METRICS.md)) - 12 canonical metrics with grain/SLA/ownership (single source of truth)
-- **Exposures** ([exposures.yml](./data-platform/dbt/models/exposures.yml)) - Links 4 marts to downstream consumers (dashboards, RAG, reports)
-- **Analytics Dashboard** ([analytics_dashboard.py](./data-platform/analytics_dashboard.py)) - Streamlit BI for stakeholder self-service
-
-### ✅ Data Quality & Governance
-- **Great Expectations** ([great_expectations/](./great_expectations/)) - Validation suites + checkpoints for quality gates
-- **Data SLAs** ([DATA_SLA.md](./DATA_SLA.md)) - Freshness targets, alerting pathways, escalation procedures
-- **Incremental Models** ([events_incremental.sql](./data-platform/dbt/models/marts/events_incremental.sql)) - Scalability patterns
-- **Daily Validation** ([.github/workflows/daily-validation.yml](./.github/workflows/daily-validation.yml)) - Proactive monitoring (06:00 UTC)
-
-### ✅ Production Engineering
-- **End-to-End Pipelines** ([run_full_pipeline.sh](./scripts/run_full_pipeline.sh)) - dbt → quality gates → embeddings → drift checks
-- **Airflow Orchestration** ([airflow/dags/](./airflow/dags/)) - DAG-based workflow management
-- **CI/CD Integration** - GitHub Actions for automated testing and validation
-- **Cloud-Ready Architecture** - Dockerized services, scalable infrastructure
-
-**📄 See detailed resume:** [RESUME_ANTHROPIC.md](./RESUME_ANTHROPIC.md)
+- **Reliability & Safety** - Drift detection, anomaly monitoring, data lineage
+- **Self-Serve Analytics** - Semantic modeling, metrics catalogs, exposures
 
 ## 🗂️ Project Structure
 
@@ -391,14 +363,14 @@ Phase 2 introduced patterns for self-serve insights and data scalability:
 - Added schema docs for `events_incremental` model with 8 column definitions.
 
 **Interview talking points:**
-- Exposures = metrics observability + lineage to BI/apps (Anthropic values transparency).
-- Incremental models = cost-efficient processing at scale (Anthropic handles massive data volumes).
+- Exposures = metrics observability + lineage to BI/apps (enables transparency and governance).
+- Incremental models = cost-efficient processing at scale for large data volumes.
 - Source freshness = SLA enforcement (catches stale ingestion early).
 
 Validated: dbt compile/run/test all pass (23 tests green, 7 models including 1 incremental).
 
 ### ✅ Phase 3 Reliability & Safety Monitoring (Completed)
-Phase 3 adds interpretability and reliability features aligned with Anthropic's mission:
+Phase 3 adds interpretability and reliability features for production-grade data platforms:
 
 - `scripts/check_embedding_drift.py` – Detects distribution shifts in embedding L2 norms (mean ±10% threshold) vs historical baseline; exits non-zero to gate pipeline.
 - `scripts/check_row_count_anomaly.py` – Z-score anomaly detection (threshold=3σ) on mart row counts using 7-day rolling window; flags unexpected spikes/drops.
@@ -406,7 +378,7 @@ Phase 3 adds interpretability and reliability features aligned with Anthropic's 
 - `.github/workflows/daily-validation.yml` – Scheduled daily workflow (06:00 UTC) running dbt tests + drift + anomaly checks; posts Slack summary; collects metrics snapshots as artifacts.
 - Baseline files created: `metrics/baselines/embedding_norm.json`, `metrics/baselines/row_counts.json`.
 
-**Why this matters (Anthropic alignment):**
+**Why this matters:**
 - **Reliability:** Automated detection of data quality regressions and model drift before they reach production.
 - **Interpretability:** Explicit baselines and statistical thresholds (Z-score, L2 norm) make decisions auditable.
 - **Safety:** Drift detection acts as a kill switch—prevents deploying embeddings with unexpected distributions that could degrade RAG quality.
