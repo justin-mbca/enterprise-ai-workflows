@@ -44,6 +44,36 @@ This repository contains three production-ready projects that demonstrate enterp
 - **Cloud Architecture** - Scalable, production-ready patterns
 - **DevOps** - Docker, CI/CD, containerization
 
+## 🤖 Anthropic Analytics Data Engineer - Portfolio Alignment
+
+**This portfolio demonstrates key competencies for Anthropic's mission:**
+
+### ✅ Reliability & Interpretability
+- **Drift Detection** ([check_embedding_drift.py](./scripts/check_embedding_drift.py)) - L2 norm monitoring detects when model behavior changes
+- **Anomaly Detection** ([check_row_count_anomaly.py](./scripts/check_row_count_anomaly.py)) - Z-score statistical checks catch data quality issues
+- **Data Lineage** ([data-lineage.md](./docs/data-lineage.md)) - Mermaid diagrams trace data flow from source → serving for transparency
+- **Blocking Safety Gates** - Pipeline fails on critical drift to prevent bad data propagation
+
+### ✅ Self-Serve Analytics Enablement
+- **dbt Semantic Layer** ([data-platform/dbt/](./data-platform/dbt/)) - 7 models, 23 tests, staging → marts architecture
+- **Metrics Catalog** ([METRICS.md](./METRICS.md)) - 12 canonical metrics with grain/SLA/ownership (single source of truth)
+- **Exposures** ([exposures.yml](./data-platform/dbt/models/exposures.yml)) - Links 4 marts to downstream consumers (dashboards, RAG, reports)
+- **Analytics Dashboard** ([analytics_dashboard.py](./data-platform/analytics_dashboard.py)) - Streamlit BI for stakeholder self-service
+
+### ✅ Data Quality & Governance
+- **Great Expectations** ([great_expectations/](./great_expectations/)) - Validation suites + checkpoints for quality gates
+- **Data SLAs** ([DATA_SLA.md](./DATA_SLA.md)) - Freshness targets, alerting pathways, escalation procedures
+- **Incremental Models** ([events_incremental.sql](./data-platform/dbt/models/marts/events_incremental.sql)) - Scalability patterns
+- **Daily Validation** ([.github/workflows/daily-validation.yml](./.github/workflows/daily-validation.yml)) - Proactive monitoring (06:00 UTC)
+
+### ✅ Production Engineering
+- **End-to-End Pipelines** ([run_full_pipeline.sh](./scripts/run_full_pipeline.sh)) - dbt → quality gates → embeddings → drift checks
+- **Airflow Orchestration** ([airflow/dags/](./airflow/dags/)) - DAG-based workflow management
+- **CI/CD Integration** - GitHub Actions for automated testing and validation
+- **Cloud-Ready Architecture** - Dockerized services, scalable infrastructure
+
+**📄 See detailed resume:** [RESUME_ANTHROPIC.md](./RESUME_ANTHROPIC.md)
+
 ## 🗂️ Project Structure
 
 ```
