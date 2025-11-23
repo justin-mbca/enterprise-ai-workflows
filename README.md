@@ -1,28 +1,5 @@
 # 🚀 Enterprise AI Workflows - Free Implementation Guide
 
-## Quick launch
-
-<p>
-  <a href="https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app">
-    <img alt="Streamlit App" src="https://img.shields.io/badge/Project%201-Streamlit%20App-ff4b4b?logo=streamlit&logoColor=white">
-  </a>
-  <a href="https://zhangju2023-mlops-pipeline-demo.hf.space/mlflow/">
-    <img alt="MLflow UI" src="https://img.shields.io/badge/Project%202-MLflow%20UI-0194E2">
-  </a>
-  <a href="https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs">
-    <img alt="API Docs" src="https://img.shields.io/badge/Project%202-API%20Docs-009688?logo=fastapi&logoColor=white">
-  </a>
-  <a href="https://zhangju2023-mlops-pipeline-demo.hf.space/api/health">
-    <img alt="API Health" src="https://img.shields.io/badge/Project%202-Health-4caf50">
-  </a>
-  <a href="https://zhangju2023-mlops-pipeline-demo.hf.space/api/predict/example">
-    <img alt="Example Prediction" src="https://img.shields.io/badge/Project%202-Example%20Prediction-7c4dff">
-  </a>
-  <a href="https://huggingface.co/spaces/zhangju2023/document-qa-rag">
-    <img alt="RAG App" src="https://img.shields.io/badge/Project%203-RAG%20App-ffcc4d?logo=huggingface&logoColor=black">
-  </a>
-</p>
-
 > Learn enterprise AI/ML workflows using **100% free and open-source tools**. Perfect for building your portfolio and demonstrating production-ready skills!
 
 ## 🌐 Live Demo Links
@@ -260,8 +237,6 @@ cd project1-rapid-insights
 streamlit run app.py
 ```
 
-**Live app:** https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app
-
 **Key Innovations:**
 - Momentum-based forecasting for trending data (captures recent patterns)
 - Naive seasonal forecasting for cyclical data (repeats patterns intelligently)
@@ -285,30 +260,9 @@ docker-compose up -d
 # Access Jupyter at http://localhost:8888
 ```
 
-**Live deployments:**
-
-Hugging Face Space (persistent demo):
-- MLflow UI: https://zhangju2023-mlops-pipeline-demo.hf.space/mlflow/
-- Model API: https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs
- - Health: https://zhangju2023-mlops-pipeline-demo.hf.space/api/health
- - Example prediction: https://zhangju2023-mlops-pipeline-demo.hf.space/api/predict/example
-
- Notes:
- - Runs in demo mode by default (no external model required)
- - MLflow is auto-seeded with a demo model (customer_churn_model → Production)
-
-GitHub Codespaces (temporary):
-- MLflow UI: https://glorious-rotary-phone-g64w6j547wcwjpq-5000.app.github.dev
-- Model API: https://glorious-rotary-phone-g64w6j547wcwjpq-8000.app.github.dev/docs
-- Jupyter Notebook: https://glorious-rotary-phone-g64w6j547wcwjpq-8888.app.github.dev/lab/tree/notebooks/01_customer_churn_mlops.ipynb
-  
-  Note: Codespaces URLs are temporary and only reachable while that Codespace is running. After the Codespace auto-sleeps, click Resume in the Codespaces UI and restart services:    ```bash
-    bash project2-mlops-pipeline/scripts/start-mlops-nodocker.sh
-    ```
-  
-    If the Codespace is deleted, these URLs will no longer work; open a new Codespace from the quickstart link to spin up a fresh demo.
-
-     Start/Resume the demo (opens a Codespace):
+**Deployment Options:**
+- See [Live Demo Links](#-live-demo-links) section above for persistent Hugging Face Space deployment
+- Use GitHub Codespaces for temporary testing environment (URLs provided after launch)
      https://codespaces.new/justin-mbca/enterprise-ai-workflows?quickstart=1
 ### Project 3: Document Q&A System
 
