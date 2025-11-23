@@ -25,6 +25,38 @@
 
 > Learn enterprise AI/ML workflows using **100% free and open-source tools**. Perfect for building your portfolio and preparing for interviews!
 
+## 🌐 Live Demo Links
+
+### Project 1: Rapid Insights Dashboard
+**🔗 [Live App](https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app)**
+- **What it does:** Interactive Streamlit dashboard for SQL-based analytics with AI-powered insights
+- **Key features:** Time-series forecasting with Prophet, sentiment analysis, SQL query interface
+- **Tech stack:** Streamlit, SQLite, PyCaret, Prophet, Plotly
+- **Use case:** Rapid prototyping and business intelligence for stakeholders
+
+### Project 2: MLOps Pipeline (Customer Churn Prediction)
+**🔗 [MLflow UI](https://zhangju2023-mlops-pipeline-demo.hf.space/mlflow/)** | **🔗 [API Docs](https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs)** | **🔗 [API Health](https://zhangju2023-mlops-pipeline-demo.hf.space/api/health)** | **🔗 [Example Prediction](https://zhangju2023-mlops-pipeline-demo.hf.space/api/predict/example)**
+- **What it does:** Complete ML lifecycle from experimentation to production API deployment
+- **Key features:** Experiment tracking, model registry, versioning, REST API with <200ms latency
+- **Tech stack:** MLflow, FastAPI, PostgreSQL, Docker, scikit-learn
+- **Use case:** Production-grade ML model serving with full observability
+
+### Project 3: Document Q&A (RAG Application)
+**🔗 [Live App](https://huggingface.co/spaces/zhangju2023/document-qa-rag)**
+- **What it does:** RAG-powered document intelligence for semantic search and compliance Q&A
+- **Key features:** ChromaDB vector store, persistent embeddings, HuggingFace transformers
+- **Tech stack:** LangChain, ChromaDB, SentenceTransformers, Gradio
+- **Use case:** Knowledge mining, policy document search, automated compliance assistance
+
+### Project 4: Data Platform & Analytics Dashboard
+**📊 Run locally** (see [Quick Start](#-quick-start))
+- **What it does:** dbt-powered data modeling layer feeding both RAG and BI applications
+- **Key features:** 7 dbt models, 23 tests, drift detection, anomaly monitoring, data lineage
+- **Tech stack:** dbt Core, DuckDB, Streamlit, Great Expectations, GitHub Actions
+- **Use case:** Self-serve analytics with reliability and quality governance
+
+---
+
 ## 📋 Overview
 
 This repository contains three production-ready projects that demonstrate enterprise AI/ML workflows without expensive licenses:
