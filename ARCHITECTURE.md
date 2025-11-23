@@ -251,10 +251,10 @@ flowchart TD
 - ✅ **Demonstrates understanding** of enterprise architecture
 - ✅ **Shows practical skills** with industry-standard patterns
 - ✅ **Proves ability to learn** and adapt to new tools
-- ✅ **Provides working demos** for interviews
+- ✅ **Provides working demos** for validation
 
-### For Interviews:
-> *"While I built this using open-source tools, I designed it to mirror the architecture patterns used by Azure ML, Snowflake, and Dataiku. The core concepts—MLOps lifecycle, orchestration, governance—are identical. This shows I can quickly adapt to your enterprise stack because I understand the underlying principles, not just specific tool interfaces."*
+### Key Value Proposition:
+> *"Built using open-source tools that mirror the architecture patterns used by Azure ML, Snowflake, and Dataiku. The core concepts—MLOps lifecycle, orchestration, governance—are identical. This demonstrates the ability to quickly adapt to enterprise stacks by understanding underlying principles, not just specific tool interfaces."*
 
 ---
 
@@ -307,30 +307,34 @@ Each project demonstrates different aspects of the enterprise architecture while
 
 ---
 
-## 🎤 Interview Discussion Points
+## � Key Technical Strengths Demonstrated
 
-When discussing this architecture:
+This architecture showcases:
 
-1. **"I understand the business value of each component"**
-   - Not just "I know MLflow" but "I know why companies choose managed ML platforms"
+1. **Understanding of Business Value**
+   - Not just tool proficiency, but understanding why companies choose managed ML platforms
+   - Focus on solving business problems, not just technical implementation
 
-2. **"I can evaluate trade-offs between tools"**
+2. **Ability to Evaluate Trade-Offs**
    - When to use Snowflake Cortex vs custom Azure ML models
    - Cost vs control vs speed considerations
+   - Technology selection based on requirements
 
-3. **"I've implemented the core patterns"**
+3. **Implementation of Core Patterns**
    - Experiment tracking, model versioning, API deployment
-   - Even if with different tools, the concepts transfer
+   - Concepts transfer across different tools and platforms
+   - Demonstrates portable skills
 
-4. **"I prioritize reliability and safety"**
+4. **Reliability and Safety Focus**
    - Built-in drift detection and anomaly monitoring
    - Statistical gates prevent bad data from propagating
-   - Proactive validation catches issues before users do
+   - Proactive validation catches issues before users encounter them
    - Demonstrates interpretability and safety-minded engineering approach
 
-5. **"I can learn new tools quickly"**
-   - Proof: I built this architecture by understanding documentation
-   - The patterns are more important than specific vendor syntax
+5. **Rapid Learning Ability**
+   - Built this architecture by understanding documentation and patterns
+   - Emphasizes that patterns are more important than specific vendor syntax
+   - Shows adaptability to new tools and platforms
 
 ---
 

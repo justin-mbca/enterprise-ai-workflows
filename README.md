@@ -23,7 +23,7 @@
   </a>
 </p>
 
-> Learn enterprise AI/ML workflows using **100% free and open-source tools**. Perfect for building your portfolio and preparing for interviews!
+> Learn enterprise AI/ML workflows using **100% free and open-source tools**. Perfect for building your portfolio and demonstrating production-ready skills!
 
 ## 🌐 Live Demo Links
 
@@ -235,7 +235,7 @@ Artifacts produced:
 - Persistent vector store: `project3-document-qa/chroma_store/`
 - dbt docs site (build): `data-platform/dbt/target/index.html`
 
-Use this script as an interview talking point for "end-to-end workflow orchestration with embedded quality gates" (even without Airflow).
+Use this script to demonstrate "end-to-end workflow orchestration with embedded quality gates" (even without Airflow).
 
 Artifacts produced:
 - DuckDB warehouse: `data-platform/dbt/warehouse/data.duckdb`
@@ -370,7 +370,7 @@ Tabs: Overview, HR Policies, Arbitration Timelines, Document Index (export CSV/J
 | Data Modeling | Commercial Data Platforms ($1000+) | dbt Core + DuckDB | $1000+ |
 | **Total** | **$54,200+/year** | **$0** | **$54,200+** |
 
-## 🎯 Interview Talking Points
+## 🎯 Key Technical Highlights
 
 ### How to Discuss These Projects
 
@@ -433,7 +433,7 @@ Phase 2 introduced patterns for self-serve insights and data scalability:
 - `data-platform/dbt/models/marts/events_incremental.sql` – Incremental model demonstrating `is_incremental()` logic, unique key constraint, and timestamp-based filtering for scalability.
 - Added schema docs for `events_incremental` model with 8 column definitions.
 
-**Interview talking points:**
+**Key technical highlights:**
 - Exposures = metrics observability + lineage to BI/apps (enables transparency and governance).
 - Incremental models = cost-efficient processing at scale for large data volumes.
 - Source freshness = SLA enforcement (catches stale ingestion early).
@@ -454,7 +454,7 @@ Phase 3 adds interpretability and reliability features for production-grade data
 - **Interpretability:** Explicit baselines and statistical thresholds (Z-score, L2 norm) make decisions auditable.
 - **Safety:** Drift detection acts as a kill switch—prevents deploying embeddings with unexpected distributions that could degrade RAG quality.
 
-**Interview talking points:**
+**Key technical highlights:**
 - Drift detection = model governance (catches encoder updates, input degradation).
 - Anomaly detection = data SLA monitoring (row count stability ensures completeness).
 - Daily validation workflow = proactive health checks (shift-left observability).
@@ -466,7 +466,7 @@ Validated: drift/anomaly scripts run successfully; baselines initialized; pipeli
 1. **Start with Project 1** - Easiest to set up and run
 2. **Document your learnings** - Keep notes on challenges and solutions
 3. **Customize for your domain** - Use data relevant to your target industry
-4. **Deploy publicly** - Show working demos in interviews
+4. **Deploy publicly** - Share working demos to showcase capabilities
 5. **Write blog posts** - Explain your implementation decisions
 
 ### 🔔 Alerts (CI + Data Quality)
@@ -523,7 +523,7 @@ This repo now includes **Great Expectations** for formal data quality validation
 - **Airflow Integration:** `ge_document_index_validation` task gates embedding refresh—only proceeds if quality checks pass.
 - **CI:** GitHub Actions workflow executes GE checkpoint before building vector store.
 
-**Why it matters (interview framing):**
+**Why this matters:**
 - Prevents semantic drift (e.g., unexpected domain "finance" stops embeddings).
 - Demonstrates shift-left testing + SLA enforcement.
 - Shows understanding of governance beyond structural dbt tests.
@@ -553,7 +553,7 @@ If you want to demonstrate orchestration proficiency (e.g., for roles listing Ai
 4. `refresh_embeddings` – Rebuild persistent Chroma store from curated mart
 5. `doc_vector_count_check` – Assert vector count matches document count
 
-**Why It Matters (Interview Framing):**
+**Why This Matters:**
 - Shows canonical dataset construction & semantic enrichment.
 - Demonstrates quality gates before downstream AI tasks.
 - Illustrates daily scheduling & potential SLAs (05:00 UTC run window).
@@ -596,13 +596,12 @@ MIT License - Free to use for personal and commercial projects
 ## 💡 Additional Resources
 
 - [Setup Guide](docs/setup-guide.md) - Detailed installation instructions
-- [Interview Prep](docs/interview-prep.md) - Common questions and answers
 - [Architecture Decisions](docs/architecture-decisions.md) - Why we chose each tool
 - [Data Platform README](data-platform/README.md) - dbt & embedding integration details
 - [Analytics Dashboard](data-platform/README_DASHBOARD.md) - BI layer usage
 
 ---
 
-**Remember:** Companies hire problem-solvers, not tool experts. These projects prove you understand the underlying concepts and can build real solutions! 🚀
+**Remember:** These projects demonstrate problem-solving skills and understanding of core concepts that transfer across tools and platforms! 🚀
 
 Built with ❤️ using 100% free and open-source tools.
