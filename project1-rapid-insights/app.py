@@ -221,29 +221,32 @@ elif page == "💬 Sentiment Analysis":
     st.header("Sentiment Analysis")
     st.markdown("*Simulates Snowflake Cortex `SENTIMENT()` function*")
     
+    # Initialize session state for text input
+    if 'sentiment_text' not in st.session_state:
+        st.session_state.sentiment_text = ""
+    
     # Input section
     st.subheader("Analyze Text")
     
     col1, col2 = st.columns([2, 1])
     
+    with col2:
+        st.markdown("#### 💡 Try Examples")
+        if st.button("😊 Positive", use_container_width=True):
+            st.session_state.sentiment_text = "This product exceeded all my expectations! The quality is outstanding and customer service was incredibly helpful. I've already recommended it to all my colleagues. Best investment I've made this year!"
+        if st.button("😐 Neutral", use_container_width=True):
+            st.session_state.sentiment_text = "The product arrived on time and works as described in the specifications. Packaging was adequate. It performs the basic functions mentioned in the documentation."
+        if st.button("😞 Negative", use_container_width=True):
+            st.session_state.sentiment_text = "Very disappointed with this purchase. The quality is poor and it stopped working after two days. Customer support was unresponsive and unhelpful. Would not recommend and requesting a refund."
+    
     with col1:
         text_input = st.text_area(
             "Enter text to analyze:",
+            value=st.session_state.sentiment_text,
             placeholder="Type or paste customer feedback, reviews, or any text...",
-            height=150
+            height=150,
+            key="text_area_input"
         )
-    
-    with col2:
-        st.markdown("#### Quick Examples")
-        if st.button("😊 Positive Example"):
-            text_input = "This product is absolutely amazing! Best purchase I've made this year. Highly recommend!"
-            st.rerun()
-        if st.button("😐 Neutral Example"):
-            text_input = "The product arrived on time. It works as described in the specifications."
-            st.rerun()
-        if st.button("😞 Negative Example"):
-            text_input = "Very disappointed with this purchase. Poor quality and doesn't work as advertised."
-            st.rerun()
     
     if st.button("🔍 Analyze Sentiment", type="primary"):
         if text_input:
