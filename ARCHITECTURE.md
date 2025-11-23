@@ -143,9 +143,15 @@ flowchart TD
     subgraph DP [Data Platform Extension]
         DP1[dbt Core<br/>Staging & Marts] --> DP2[DuckDB Warehouse]
         DP2 --> DP3[Document Index Mart]
-        DP3 --> DP4[Embedding Refresh Script]
-        DP4 --> W3B
+        DP3 --> DP6[Row Count Anomaly Check<br/>Z-score Monitoring]
+        DP6 --> DP4[Embedding Refresh Script]
+        DP4 --> DP7[Embedding Drift Detection<br/>L2 Norm Monitoring]
+        DP7 -->|Pass| W3B
+        DP7 -->|Fail + Alert| W3B
         DP3 --> DP5[Analytics Dashboard<br/>Streamlit]
+        DP8[Daily Validation Workflow<br/>Scheduled 06:00 UTC] -.->|Proactive Checks| DP1
+        DP8 -.-> DP6
+        DP8 -.-> DP7
     end
     D --> DP1
     
@@ -175,6 +181,7 @@ flowchart TD
 | **Data Modeling** | dbt Core + DuckDB | Curated semantic layer | **$0** |
 | **Vector Store Persistence** | ChromaDB (PersistentClient) | Reusable embeddings | **$0** |
 | **Analytics BI** | Streamlit Dashboard | Mart KPIs & corpus exploration | **$0** |
+| **Reliability Monitoring** | Custom Python Scripts + GitHub Actions | Drift & anomaly detection | **$0** |
 | **Total** | | | **$0** |
 
 ---
@@ -204,6 +211,12 @@ flowchart TD
 - Model retraining triggers
 - Performance monitoring
 
+### 5. Reliability & Safety Monitoring
+- **Anomaly Detection** - Statistical checks (Z-score) on data volumes
+- **Drift Detection** - Distribution monitoring on embeddings (L2 norm)
+- **Proactive Validation** - Scheduled daily checks before issues reach production
+- **Blocking Gates** - Pipeline fails on critical drift to prevent bad data propagation
+
 ---
 
 ## 📊 Feature Comparison
@@ -219,6 +232,8 @@ flowchart TD
 | **BI / Analytics** | Power BI / Tableau | Streamlit Dashboard | ✅ Same KPI surfacing |
 | **LLM Integration** | Azure OpenAI | HuggingFace Transformers | ✅ Same prompt engineering |
 | **Monitoring** | Azure Monitor | Prometheus + Grafana | ✅ Same metrics |
+| **Drift Detection** | Azure ML Data Drift | Custom Z-score & L2 norm checks | ✅ Same statistical concepts |
+| **Data Quality** | Monte Carlo / Soda | Great Expectations + custom scripts | ✅ Same anomaly detection patterns |
 | **Data Governance** | Fabric + Snowflake | PostgreSQL + Git | ⚠️ Simplified but conceptually similar |
 
 ---
@@ -287,6 +302,8 @@ Each project demonstrates different aspects of the enterprise architecture while
 | **Azure OpenAI** | Open-source LLMs (Llama, Mistral) | Same prompting and API patterns |
 | **dbt Cloud / Fabric Semantic Layer** | dbt Core + DuckDB | Same governed transformation & lineage |
 | **Power BI / Tableau** | Streamlit Analytics Dashboard | Same KPI visualization & ad-hoc exploration |
+| **Azure ML Data Drift** | Custom Python Scripts | Same statistical monitoring (Z-score, distribution checks) |
+| **Monte Carlo / Soda Core** | Great Expectations + Custom Checks | Same anomaly detection and data quality gates |
 
 ---
 
@@ -305,7 +322,13 @@ When discussing this architecture:
    - Experiment tracking, model versioning, API deployment
    - Even if with different tools, the concepts transfer
 
-4. **"I can learn new tools quickly"**
+4. **"I prioritize reliability and safety"**
+   - Built-in drift detection and anomaly monitoring
+   - Statistical gates prevent bad data from propagating
+   - Proactive validation catches issues before users do
+   - Demonstrates interpretability and safety mindset (aligned with Anthropic values)
+
+5. **"I can learn new tools quickly"**
    - Proof: I built this architecture by understanding documentation
    - The patterns are more important than specific vendor syntax
 
@@ -319,6 +342,11 @@ When discussing this architecture:
 - [Data Platform README](./data-platform/README.md)
 - [Analytics Dashboard](./data-platform/README_DASHBOARD.md)
 - [Embedding Refresh Script](./scripts/refresh_embeddings.py)
+- [Data Lineage Diagram](./docs/data-lineage.md)
+- [Metrics Catalog](./METRICS.md)
+- [Data SLA Documentation](./DATA_SLA.md)
+- [Drift Detection Script](./scripts/check_embedding_drift.py)
+- [Anomaly Detection Script](./scripts/check_row_count_anomaly.py)
 
 ---
 
