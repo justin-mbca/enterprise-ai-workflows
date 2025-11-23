@@ -1,0 +1,116 @@
+name: Daily Data Validation
+
+on:
+  schedule:
+    # Run daily at 06:00 UTC (after expected pipeline completion at 05:30)
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      send_slack:
+        description: 'Send Slack notification'
+        required: false
+        default: 'true'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install dbt-core dbt-duckdb chromadb sentence-transformers numpy
+
+      - name: Run dbt tests
+        id: dbt_tests
+        continue-on-error: true
+        run: |
+          cd data-platform/dbt
+          dbt seed --profiles-dir .
+          dbt run --profiles-dir .
+          dbt test --profiles-dir . --store-failures
+
+      - name: Check row count anomalies
+        id: anomaly_check
+        continue-on-error: true
+        run: |
+          python3 scripts/check_row_count_anomaly.py \
+            --failures-file /tmp/anomaly_failures.json
+
+      - name: Check embedding drift
+        id: drift_check
+        continue-on-error: true
+        run: |
+          # Build embeddings first if not present
+          if [ ! -d "project3-document-qa/chroma_store" ]; then
+            python3 scripts/refresh_embeddings.py \
+              --persist-dir project3-document-qa/chroma_store --reset
+          fi
+          python3 scripts/check_embedding_drift.py \
+            --failures-file /tmp/drift_failures.json
+
+      - name: Collect metrics snapshot
+        id: metrics
+        run: |
+          # Query current metrics
+          python3 << 'PYEOF'
+          import duckdb
+          import json
+          from datetime import datetime
+
+          con = duckdb.connect('data-platform/dbt/warehouse/data.duckdb')
+          
+          metrics = {
+              "timestamp": datetime.utcnow().isoformat(),
+              "document_index_total_rows": con.execute('SELECT COUNT(*) FROM main_marts.document_index').fetchone()[0],
+              "hr_policy_count": con.execute('SELECT COUNT(*) FROM main_staging.stg_hr_policy').fetchone()[0],
+              "arbitration_case_count": con.execute('SELECT COUNT(*) FROM main_staging.stg_arbitration_subrogation').fetchone()[0],
+          }
+          
+          print(f"Metrics: {json.dumps(metrics, indent=2)}")
+          
+          # Write to GitHub Actions output
+          with open('/tmp/metrics.json', 'w') as f:
+              json.dump(metrics, f, indent=2)
+          PYEOF
+          
+          echo "metrics_file=/tmp/metrics.json" >> $GITHUB_OUTPUT
+
+      - name: Send Slack summary
+        if: ${{ (github.event.inputs.send_slack == 'true' || github.event_name == 'schedule') && env.SLACK_WEBHOOK_URL }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          # Determine overall status
+          DBT_STATUS="${{ steps.dbt_tests.outcome }}"
+          ANOMALY_STATUS="${{ steps.anomaly_check.outcome }}"
+          DRIFT_STATUS="${{ steps.drift_check.outcome }}"
+          
+          if [ "$DBT_STATUS" == "success" ] && [ "$ANOMALY_STATUS" == "success" ] && [ "$DRIFT_STATUS" == "success" ]; then
+            LEVEL="success"
+            MESSAGE="✅ Daily validation passed: dbt tests, anomaly detection, drift detection all green."
+          else
+            LEVEL="warning"
+            MESSAGE="⚠️ Daily validation completed with issues - dbt:$DBT_STATUS anomaly:$ANOMALY_STATUS drift:$DRIFT_STATUS"
+          fi
+          
+          python3 scripts/slack_notify.py "$MESSAGE" --level "$LEVEL"
+
+      - name: Upload metrics artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: daily-metrics-${{ github.run_number }}
+          path: /tmp/metrics.json
+          retention-days: 30
+
+      - name: Fail workflow if critical checks failed
+        if: steps.dbt_tests.outcome == 'failure' || steps.drift_check.outcome == 'failure'
+        run: |
+          echo "::error::Critical validation checks failed - dbt or drift"
+          exit 1

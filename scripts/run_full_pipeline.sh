@@ -117,9 +117,31 @@ else
     echo -e "${YELLOW}⚠️  great_expectations CLI not installed; skipping Data Docs generation${NC}\n"
 fi
 
-# Step 5: Refresh embeddings (build vector store)
+# Step 5: Row Count Anomaly Detection
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BLUE}🧬 STEP 5: Refresh Embeddings - Build vector store${NC}"
+echo -e "${BLUE}📊 STEP 5: Anomaly Detection - Check row count stability${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+cd "$REPO_ROOT"
+
+# Run anomaly detection (will fail if Z-score > 3)
+if python3 scripts/check_row_count_anomaly.py --failures-file /tmp/anomaly_failures.json; then
+    echo -e "${GREEN}✅ No anomalies detected${NC}\n"
+    # Update baseline with current run
+    python3 scripts/check_row_count_anomaly.py --update-baseline
+else
+    echo -e "${RED}❌ Anomaly detected - sending alert${NC}"
+    if [ -n "$SLACK_WEBHOOK_URL" ]; then
+        python3 "$REPO_ROOT/scripts/slack_notify.py" \
+            "Row count anomaly detected in pipeline run at commit $(git -C "$REPO_ROOT" rev-parse --short HEAD)." \
+            --level error \
+            --failures-file /tmp/anomaly_failures.json || true
+    fi
+    echo -e "${YELLOW}⚠️  Continuing pipeline despite anomaly (set to warn-only mode)${NC}\n"
+fi
+
+# Step 6: Refresh embeddings (build vector store)
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${BLUE}🧬 STEP 6: Refresh Embeddings - Build vector store${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 cd "$REPO_ROOT"
 
@@ -133,9 +155,28 @@ else
     echo -e "${YELLOW}⚠️  scripts/refresh_embeddings.py not found - skipping embeddings${NC}\n"
 fi
 
-# Step 6: Verify vector store
+# Step 7: Embedding Drift Detection
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BLUE}✔️  STEP 6: Verify vector store${NC}"
+echo -e "${BLUE}🔍 STEP 7: Drift Detection - Check embedding distribution${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+if python3 scripts/check_embedding_drift.py --failures-file /tmp/drift_failures.json; then
+    echo -e "${GREEN}✅ No drift detected${NC}\n"
+else
+    echo -e "${RED}❌ Embedding drift detected - sending alert${NC}"
+    if [ -n "$SLACK_WEBHOOK_URL" ]; then
+        python3 "$REPO_ROOT/scripts/slack_notify.py" \
+            "Embedding drift detected in pipeline run at commit $(git -C "$REPO_ROOT" rev-parse --short HEAD). Review baseline and model version." \
+            --level error \
+            --failures-file /tmp/drift_failures.json || true
+    fi
+    echo -e "${RED}🛑 STOPPING PIPELINE due to drift (blocking gate)${NC}"
+    exit 1
+fi
+
+# Step 8: Verify vector store
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${BLUE}✔️  STEP 8: Verify vector store${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
 python3 << 'PYEOF'

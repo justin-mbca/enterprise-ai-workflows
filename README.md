@@ -367,6 +367,28 @@ Phase 2 introduced patterns for self-serve insights and data scalability:
 
 Validated: dbt compile/run/test all pass (23 tests green, 7 models including 1 incremental).
 
+### ✅ Phase 3 Reliability & Safety Monitoring (Completed)
+Phase 3 adds interpretability and reliability features aligned with Anthropic's mission:
+
+- `scripts/check_embedding_drift.py` – Detects distribution shifts in embedding L2 norms (mean ±10% threshold) vs historical baseline; exits non-zero to gate pipeline.
+- `scripts/check_row_count_anomaly.py` – Z-score anomaly detection (threshold=3σ) on mart row counts using 7-day rolling window; flags unexpected spikes/drops.
+- Updated `scripts/run_full_pipeline.sh` – Integrated Steps 5 (anomaly check) and 7 (drift check) with Slack failure detail via `--failures-file` flag.
+- `.github/workflows/daily-validation.yml` – Scheduled daily workflow (06:00 UTC) running dbt tests + drift + anomaly checks; posts Slack summary; collects metrics snapshots as artifacts.
+- Baseline files created: `metrics/baselines/embedding_norm.json`, `metrics/baselines/row_counts.json`.
+
+**Why this matters (Anthropic alignment):**
+- **Reliability:** Automated detection of data quality regressions and model drift before they reach production.
+- **Interpretability:** Explicit baselines and statistical thresholds (Z-score, L2 norm) make decisions auditable.
+- **Safety:** Drift detection acts as a kill switch—prevents deploying embeddings with unexpected distributions that could degrade RAG quality.
+
+**Interview talking points:**
+- Drift detection = model governance (catches encoder updates, input degradation).
+- Anomaly detection = data SLA monitoring (row count stability ensures completeness).
+- Daily validation workflow = proactive health checks (shift-left observability).
+- Slack integration with `--failures-file` = actionable incident response (enumerate root causes).
+
+Validated: drift/anomaly scripts run successfully; baselines initialized; pipeline integration tested.
+
 
 1. **Start with Project 1** - Easiest to set up and run
 2. **Document your learnings** - Keep notes on challenges and solutions
