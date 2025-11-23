@@ -52,6 +52,14 @@ Showcase of three production-inspired projects you can run for free.
 
 These pages auto-update via GitHub Actions after the full pipeline workflow runs (`full-pipeline.yml`).
 
+### Reliability Foundations (Phase 1)
+- Metrics Catalog: /METRICS.md
+- Data SLAs: /DATA_SLA.md
+- Lineage Diagram: /docs/data-lineage.md
+- Enhanced dbt Schema: /data-platform/dbt/models/schema.yml
+
+Upcoming (Phase 2): dbt exposures for key metrics, source freshness tests, and an example incremental model.
+
 ## About
 
 This site is a static showcase hosted on GitHub Pages. For Project 2, the running app is hosted on Hugging Face Spaces (Docker) or GitHub Codespaces; this site links to those live environments.

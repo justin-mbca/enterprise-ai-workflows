@@ -2,41 +2,50 @@ version: 2
 
 models:
   - name: stg_hr_policy
-    description: Staging HR policy seed data.
+    description: "Staging HR policy seed data (one row per policy document). Source: seeds/hr_policy.csv"
     columns:
       - name: policy_id
+        description: "Primary key for HR policy document (string). Unique identifier linking features."
         tests: [not_null, unique]
       - name: category
+        description: "High-level policy category enumerated from controlled list."
         tests:
           - not_null
           - accepted_values:
               values: ['PTO','Overtime','Payroll','Benefits','FMLA','Expense','Performance']
       - name: raw_text
+        description: "Full policy text body used for downstream feature extraction and embeddings."
         tests: [not_null]
 
   - name: stg_arbitration_subrogation
-    description: Staging arbitration & subrogation documents.
+    description: "Staging arbitration & subrogation documents (legal domain). Source: seeds/arbitration_subrogation.csv"
     columns:
       - name: doc_id
+        description: "Primary key for arbitration/subrogation document."
         tests: [not_null, unique]
       - name: category
+        description: "Document category (e.g., 'Arbitration', 'Subrogation')."
         tests:
           - not_null
       - name: raw_text
+        description: "Full document text used for timeline extraction and embeddings."
         tests: [not_null]
 
   - name: stg_ml_concepts
-    description: Staging ML concept documents.
+    description: "Staging ML concept documents (glossary / knowledge base). Source: seeds/ml_concepts.csv"
     columns:
       - name: concept_id
+        description: "Primary key for ML concept record."
         tests: [not_null, unique]
       - name: topic
+        description: "Concept topic label (e.g., 'Vector Embeddings', 'RAG')."
         tests: [not_null]
       - name: raw_text
+        description: "Explanation / definition text for the ML concept used in embeddings."
         tests: [not_null]
 
   - name: hr_policy_features
-    description: Derived HR policy feature flags.
+    description: "Derived HR policy feature flags for downstream analytics (enrichment of stg_hr_policy)."
     columns:
       - name: policy_id
         tests:
@@ -48,20 +57,28 @@ models:
         description: PTO accrual (should be 1.67 for PTO category)
         tests: []
       - name: mentions_overtime
+        description: "Boolean flag (0/1) indicating if policy text references overtime rules."
         tests: []
 
   - name: arbitration_timelines
-    description: Extracted arbitration timelines.
+    description: "Extracted arbitration timelines with filing deadline estimations."
     columns:
       - name: doc_id
+        description: "Foreign key referencing stg_arbitration_subrogation.doc_id"
         tests: [not_null]
       - name: filing_deadline_days
+        description: "Integer days until filing deadline parsed from document (nullable if not present)."
         tests: []
 
   - name: document_index
-    description: Unified document index across domains for RAG.
+    description: "Unified document index across domains for RAG & analytics (union of HR, legal, ML concepts). Serves as curated corpus for embeddings."
     columns:
       - name: id
+        description: "Surrogate identifier unique across all domains."
         tests: [not_null]
       - name: domain
+        description: "Source domain enumeration. Expected values: ['hr_policy','arbitration_subrogation','ml_concepts']."
+        tests: [not_null]
+      - name: text
+        description: "Canonical cleaned document text ready for embedding ingestion (original column name is 'text')."
         tests: [not_null]

@@ -342,6 +342,17 @@ Tabs: Overview, HR Policies, Arbitration Timelines, Document Index (export CSV/J
 
 ## 🌟 Next Steps
 
+### ✅ Phase 1 Reliability Foundations (Completed)
+Phase 1 established baseline governance and transparency artifacts:
+
+- `METRICS.md` – Canonical metric catalog with formulas + SLA targets.
+- `DATA_SLA.md` – Schedule, quality gates, alerting & recovery procedures.
+- `docs/data-lineage.md` – Mermaid lineage from seeds → staging → marts → quality gates → embeddings → serving.
+- Enriched `data-platform/dbt/models/schema.yml` – Column-level descriptions + domain enumerations.
+
+These artifacts position the project as an analytics engineering portfolio piece (showing modeling, documentation, observability, and reliability mindset). Phase 2 will introduce exposures, freshness tests, and an incremental model.
+
+
 1. **Start with Project 1** - Easiest to set up and run
 2. **Document your learnings** - Keep notes on challenges and solutions
 3. **Customize for your domain** - Use data relevant to your target industry
@@ -364,7 +375,36 @@ Setup:
   ```
 
 Alert script: `scripts/slack_notify.py` (emoji prefixes for success, failure, warning).
-To extend alerts (e.g., only on failure, include failed expectation names), update the workflow or wrap the GE validation with a custom Python script that enumerates failing expectations.
+Extended alert script capabilities:
+
+```bash
+# Basic message (auto info emoji)
+python3 scripts/slack_notify.py "Pipeline run complete"
+
+# Explicit level
+python3 scripts/slack_notify.py "dbt models built" --level success
+python3 scripts/slack_notify.py "Quality gate failed" --level error
+
+# Append failing expectations from a JSON or text file
+python3 scripts/slack_notify.py "Quality gate failed" --level error --failures-file great_expectations/uncommitted/validations/latest.json
+
+# Send a fully custom JSON payload (overrides other flags)
+python3 scripts/slack_notify.py "placeholder" --raw-json payload.json
+
+# Plain message without emoji
+python3 scripts/slack_notify.py "Quiet notification" --no-emoji
+```
+
+Failure details file format examples handled by `--failures-file`:
+- JSON list: `["row count mismatch","unexpected domain: finance"]`
+- JSON object with `failures` key: `{ "failures": ["duplicate IDs", "text length spike"] }`
+- Plain text file: one failure per line.
+
+If the file has >15 lines it is truncated with a summary line.
+
+Emoji got garbled? If you see characters like `ÿ...e2...9d...8c`, your terminal encoding or copy source mangled the UTF-8 emoji. Paste directly from a UTF-8 source or use ASCII text; the script inserts standard Slack emoji codes automatically for the `--level` values.
+
+To extend alerts further (e.g., suppress success spam, include GE expectation statistics), add a step that writes a small JSON file of failures and pass its path via `--failures-file`.
 
 ### Data Platform & Quality Layer
 This repo now includes **Great Expectations** for formal data quality validation:
