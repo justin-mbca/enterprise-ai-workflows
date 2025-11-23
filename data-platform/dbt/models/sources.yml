@@ -1,0 +1,42 @@
+version: 2
+
+sources:
+  - name: seed_data
+    description: "CSV seed files representing raw source data for staging models (freshness checks require timestamp column; seeds don't have loaded_at by default)"
+    database: main
+    schema: main
+    # Note: Freshness checks commented out for seed-based sources without loaded_at column
+    # In production with external ingestion, add loaded_at_field and enable freshness
+    # freshness:
+    #   warn_after: {count: 2, period: day}
+    #   error_after: {count: 7, period: day}
+    # loaded_at_field: _dbt_loaded_at
+    tables:
+      - name: hr_policy
+        description: "HR policy documents seed (manually updated)"
+        columns:
+          - name: policy_id
+            description: "Primary key"
+          - name: category
+            description: "Policy category"
+          - name: raw_text
+            description: "Policy full text"
+        # Table-level freshness disabled for seed without loaded_at timestamp
+        # In production: add loaded_at column and uncomment below
+        # freshness:
+        #   warn_after: {count: 3, period: day}
+        #   error_after: {count: 14, period: day}
+
+      - name: arbitration_subrogation
+        description: "Legal documents seed (arbitration & subrogation cases)"
+        columns:
+          - name: doc_id
+          - name: category
+          - name: raw_text
+
+      - name: ml_concepts
+        description: "ML concept glossary seed"
+        columns:
+          - name: concept_id
+          - name: topic
+          - name: raw_text

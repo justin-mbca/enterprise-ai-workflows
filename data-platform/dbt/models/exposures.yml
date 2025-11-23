@@ -1,0 +1,66 @@
+version: 2
+
+exposures:
+  - name: document_index_metrics
+    label: "Document Index Core Metrics"
+    type: dashboard
+    maturity: medium
+    url: http://localhost:8502
+    description: |
+      Key metrics for the curated document index corpus:
+      - document_index_total_rows: Total documents in unified corpus
+      - vector_store_document_count: Embedding index size
+      - vector_store_sync_gap: Drift between mart and embeddings
+      
+      These metrics power the analytics dashboard and inform RAG quality.
+    depends_on:
+      - ref('document_index')
+    owner:
+      name: Data Platform
+      email: data-platform@example.com
+
+  - name: hr_policy_analytics
+    label: "HR Policy Analytics Dashboard"
+    type: dashboard
+    maturity: medium
+    url: http://localhost:8502
+    description: |
+      HR policy coverage and feature extraction metrics:
+      - hr_policy_count: Number of active policies
+      - avg_policy_text_length: Content completeness health check
+      
+      Feeds HR tab in analytics dashboard.
+    depends_on:
+      - ref('stg_hr_policy')
+      - ref('hr_policy_features')
+    owner:
+      name: HR Data Steward
+      email: hr-steward@example.com
+
+  - name: rag_application
+    label: "Document Q&A RAG Application"
+    type: application
+    maturity: high
+    url: http://localhost:7860
+    description: |
+      Production RAG application consuming the persistent Chroma vector store.
+      Upstream dependency: document_index mart refreshed via dbt + embedding pipeline.
+      SLA: Daily refresh by 05:15 UTC; quality gate via Great Expectations.
+    depends_on:
+      - ref('document_index')
+    owner:
+      name: AI Enablement
+      email: ai-enablement@example.com
+
+  - name: arbitration_timelines_report
+    label: "Legal Arbitration Timelines Report"
+    type: analysis
+    maturity: low
+    description: |
+      Ad-hoc analysis of arbitration filing deadlines extracted from legal documents.
+      Metric: arbitration_case_count
+    depends_on:
+      - ref('arbitration_timelines')
+    owner:
+      name: Legal Data Steward
+      email: legal-steward@example.com

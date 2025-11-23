@@ -350,7 +350,22 @@ Phase 1 established baseline governance and transparency artifacts:
 - `docs/data-lineage.md` – Mermaid lineage from seeds → staging → marts → quality gates → embeddings → serving.
 - Enriched `data-platform/dbt/models/schema.yml` – Column-level descriptions + domain enumerations.
 
-These artifacts position the project as an analytics engineering portfolio piece (showing modeling, documentation, observability, and reliability mindset). Phase 2 will introduce exposures, freshness tests, and an incremental model.
+These artifacts position the project as an analytics engineering portfolio piece (showing modeling, documentation, observability, and reliability mindset).
+
+### ✅ Phase 2 Self-Serve Analytics & Scalability (Completed)
+Phase 2 introduced patterns for self-serve insights and data scalability:
+
+- `data-platform/dbt/models/exposures.yml` – 4 exposures linking marts to downstream consumers (dashboards, RAG app, reports) with ownership metadata.
+- `data-platform/dbt/models/sources.yml` – Source definitions with freshness configuration template (commented for seed-based sources; ready for production ingestion).
+- `data-platform/dbt/models/marts/events_incremental.sql` – Incremental model demonstrating `is_incremental()` logic, unique key constraint, and timestamp-based filtering for scalability.
+- Added schema docs for `events_incremental` model with 8 column definitions.
+
+**Interview talking points:**
+- Exposures = metrics observability + lineage to BI/apps (Anthropic values transparency).
+- Incremental models = cost-efficient processing at scale (Anthropic handles massive data volumes).
+- Source freshness = SLA enforcement (catches stale ingestion early).
+
+Validated: dbt compile/run/test all pass (23 tests green, 7 models including 1 incremental).
 
 
 1. **Start with Project 1** - Easiest to set up and run

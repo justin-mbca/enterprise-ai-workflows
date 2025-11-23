@@ -82,3 +82,26 @@ models:
       - name: text
         description: "Canonical cleaned document text ready for embedding ingestion (original column name is 'text')."
         tests: [not_null]
+
+  - name: events_incremental
+    description: "Incremental event log demonstrating scalability pattern (synthetic example for portfolio). In production would capture user interactions, pipeline runs, audit trail."
+    columns:
+      - name: event_id
+        description: "Primary key for event record."
+        tests: [unique, not_null]
+      - name: event_type
+        description: "Event classification (e.g., 'policy_view', 'query_executed')."
+        tests: [not_null]
+      - name: related_entity_id
+        description: "Foreign key to related entity (policy_id, doc_id, etc.)."
+      - name: entity_type
+        description: "Type of related entity (e.g., 'hr_policy', 'document')."
+      - name: event_metadata
+        description: "Additional context (JSON or text field for flexible attributes)."
+      - name: event_timestamp
+        description: "Timestamp when event occurred."
+        tests: [not_null]
+      - name: event_date
+        description: "Date truncation for efficient partitioning in production systems."
+      - name: event_hour
+        description: "Hour truncation for time-of-day analysis."
