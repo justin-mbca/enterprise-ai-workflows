@@ -31,6 +31,11 @@ flowchart LR
         Q3[Semantic checks]
     end
 
+    subgraph Monitoring & Safety
+        MON1[Row Count Anomaly Check]
+        MON2[Embedding Drift Detection]
+    end
+
     subgraph Embeddings & Vector Store
         E1[(refresh_embeddings.py)]
         E2[Chroma Collection]
@@ -54,16 +59,24 @@ flowchart LR
     M1 --> Q2
     M1 --> Q3
 
-    Q1 --> E1
-    Q2 --> E1
-    Q3 --> E1
+    Q1 --> MON1
+    Q2 --> MON1
+    Q3 --> MON1
+    MON1 --> E1
     E1 --> E2
-    E2 --> R1
+    E2 --> MON2
+    MON2 -->|Pass| R1
+    MON2 -->|Fail| R1
     M1 --> D1
+
+    style MON1 fill:#fff3cd
+    style MON2 fill:#fff3cd
 ```
 
 ## Notes
 - All transformations executed via dbt; tests applied post-build.
 - Great Expectations and semantic checks gate the embedding refresh.
+- **Row Count Anomaly Check**: Statistical monitoring (Z-score) detects unexpected volume changes in marts before embeddings.
+- **Embedding Drift Detection**: Monitors L2 norm distribution post-embedding to catch model/input quality degradation; blocks pipeline on drift.
 - Chroma persistent store consumed directly by RAG application; dashboard queries DuckDB marts.
-- Future: add drift & anomaly checks between Quality Gates and Embedding step.
+- Daily validation workflow (06:00 UTC) runs full test suite + monitoring checks proactively.
