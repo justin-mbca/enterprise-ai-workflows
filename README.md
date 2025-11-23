@@ -78,6 +78,45 @@ This repository contains three production-ready projects that demonstrate enterp
 - **Reliability & Safety** - Drift detection, anomaly monitoring, data lineage
 - **Self-Serve Analytics** - Semantic modeling, metrics catalogs, exposures
 
+## 🏗️ Architecture Overview
+
+This portfolio demonstrates **enterprise AI/ML architecture patterns** using open-source tools that mirror industry-standard solutions:
+
+```mermaid
+flowchart TD
+    A[Raw Data Sources] --> B[Data Platform Layer<br/>dbt + DuckDB]
+    B --> C[Quality Gates<br/>dbt tests + Great Expectations]
+    C --> D[Monitoring & Safety<br/>Anomaly + Drift Detection]
+    D --> E[Semantic Layer<br/>Marts + Exposures]
+    E --> F1[Streamlit Dashboard<br/>Self-Serve BI]
+    E --> F2[Vector Store<br/>ChromaDB Embeddings]
+    F2 --> F3[RAG Application<br/>Document Q&A]
+    E --> F4[ML Models<br/>MLflow Registry]
+    F4 --> F5[FastAPI Serving<br/>Production API]
+    
+    style D fill:#fff3cd
+    style E fill:#d4edda
+```
+
+**🔗 See Full Architecture Documentation:** [ARCHITECTURE.md](./ARCHITECTURE.md)
+
+### Key Architectural Patterns Demonstrated:
+
+| Pattern | Enterprise Tool | Open-Source Implementation | Status |
+|---------|----------------|---------------------------|--------|
+| **Semantic Data Modeling** | dbt Cloud / Fabric | dbt Core + DuckDB | ✅ |
+| **Data Quality Gates** | Monte Carlo / Soda | Great Expectations + Custom checks | ✅ |
+| **Drift Detection** | Azure ML Data Drift | Custom Z-score & L2 norm checks | ✅ |
+| **Self-Serve Analytics** | Power BI / Tableau | Streamlit + dbt Exposures | ✅ |
+| **ML Experiment Tracking** | Azure ML | MLflow + PostgreSQL | ✅ |
+| **Model Deployment** | Azure ML Endpoints | FastAPI + Docker | ✅ |
+| **Vector Search** | Snowflake Cortex | ChromaDB + SentenceTransformers | ✅ |
+| **Workflow Orchestration** | Azure Data Factory | Airflow + GitHub Actions | ✅ |
+
+**💡 Value Proposition:** Learn industry-standard architectural patterns using $0 tools that translate directly to enterprise environments.
+
+---
+
 ## 🗂️ Project Structure
 
 ```
