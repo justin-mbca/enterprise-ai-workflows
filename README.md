@@ -489,47 +489,121 @@ This portfolio implements Apache Airflow orchestration to demonstrate production
 ```bash
 export AIRFLOW_HOME="$(pwd)/airflow"
 python -m venv venv && source venv/bin/activate
-pip install -r airflow/requirements-airflow.txt
-airflow db init
-airflow variables set REPO_ROOT "$(pwd)"
-airflow standalone  # UI at http://localhost:8080
-```
 
-**Backfill Example:**
-```bash
-airflow dags backfill data_platform_pipeline -s 2025-11-15 -e 2025-11-22
-```
+# 🚀 Enterprise AI Workflows - Free Implementation Guide
 
-**Automated CI/CD:** GitHub Actions workflow (`.github/workflows/airflow-ci.yml`) runs on every push and daily at 05:15 UTC:
-- Validates DAG structure and task dependencies
-- Executes full pipeline via `airflow tasks test` (no scheduler needed)
-- Uploads artifacts: DAG graph visualization, Chroma store, GE validation results
-- Posts pipeline execution summary to GitHub Actions summary page
-
-## 🌐 Website
-
-Static showcase (GitHub Pages): If Pages is enabled for this repo using the `/docs` folder, visit:
-https://justin-mbca.github.io/enterprise-ai-workflows/
-
-This site lists all projects and links to the live demos (Streamlit, Hugging Face Spaces, Codespaces).
-
-## 🤝 Contributing
-
-Have improvements or alternative implementations? PRs welcome!
-
-## 📄 License
-
-MIT License - Free to use for personal and commercial projects
-
-## 💡 Additional Resources
-
-- [Setup Guide](docs/setup-guide.md) - Detailed installation instructions
-- [Architecture Decisions](docs/architecture-decisions.md) - Why we chose each tool
-- [Data Platform README](data-platform/README.md) - dbt & embedding integration details
-- [Analytics Dashboard](data-platform/README_DASHBOARD.md) - BI layer usage
+> Learn enterprise AI/ML workflows using **100% free and open-source tools**. Build your portfolio and demonstrate production-ready skills!
 
 ---
 
-**Remember:** These projects demonstrate problem-solving skills and understanding of core concepts that transfer across tools and platforms! 🚀
+## 📑 Table of Contents
 
-Built with ❤️ using 100% free and open-source tools.
+1. [Live Demos & Projects](#live-demos--projects)
+2. [Quick Start](#quick-start)
+3. [Project Summaries](#project-summaries)
+4. [Architecture Overview](#architecture-overview)
+5. [What You'll Learn](#what-youll-learn)
+6. [Project Structure](#project-structure)
+7. [Further Reading](#further-reading)
+
+---
+
+## 🌐 Live Demos & Projects
+
+- **Project 1: Rapid Insights Dashboard** ([Live App](https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app))
+- **Project 2: MLOps Pipeline** ([MLflow UI](https://zhangju2023-mlops-pipeline-demo.hf.space/mlflow/), [API Docs](https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs))
+- **Project 3: Document Q&A (RAG)** ([Live App](https://huggingface.co/spaces/zhangju2023/document-qa-rag))
+- **Project 4: Data Platform & Analytics Dashboard** (Run locally)
+
+---
+
+## ⚡ Quick Start
+
+Clone the repo and launch any project:
+
+```bash
+git clone https://github.com/justin-mbca/enterprise-ai-workflows.git
+cd enterprise-ai-workflows
+# See each project folder for setup instructions
+```
+
+---
+
+## 📦 Project Summaries
+
+| Project | Description | Tech Stack | Learn More |
+|---------|-------------|------------|------------|
+| **Rapid Insights** | Streamlit dashboard for SQL analytics, forecasting, sentiment, prompt engineering, annotation, RLHF | Streamlit, SQLite, Prophet, Plotly | [project1-rapid-insights/README.md](project1-rapid-insights/README.md) |
+| **MLOps Pipeline** | End-to-end ML lifecycle: training, tracking, registry, FastAPI serving, CI/CD | MLflow, FastAPI, Docker, scikit-learn | [project2-mlops-pipeline/README.md](project2-mlops-pipeline/README.md) |
+| **Document Q&A (RAG)** | RAG-powered semantic search and Q&A over documents | LangChain, ChromaDB, Gradio | [project3-document-qa/README.md](project3-document-qa/README.md) |
+| **Data Platform & Analytics** | dbt-powered data modeling, tests, drift/anomaly detection, BI dashboard | dbt, DuckDB, Streamlit, Great Expectations | [data-platform/README.md](data-platform/README.md) |
+
+---
+
+## �️ Architecture Overview
+
+<details>
+<summary>Click to expand architecture diagram</summary>
+
+```mermaid
+flowchart TD
+  A[Raw Data Sources] --> B[Data Platform Layer<br/>dbt + DuckDB]
+  B --> C[Quality Gates<br/>dbt tests + Great Expectations]
+  C --> D[Monitoring & Safety<br/>Anomaly + Drift Detection]
+  D --> E[Semantic Layer<br/>Marts + Exposures]
+  E --> F1[Streamlit Dashboard<br/>Self-Serve BI]
+  E --> F2[Vector Store<br/>ChromaDB Embeddings]
+  F2 --> F3[RAG Application<br/>Document Q&A]
+  E --> F4[ML Models<br/>MLflow Registry]
+  F4 --> F5[FastAPI Serving<br/>Production API]
+  style D fill:#fff3cd
+  style E fill:#d4edda
+```
+
+</details>
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for full details, patterns, and implementation status.
+
+---
+
+## 🎯 What You'll Learn
+
+- MLOps best practices (tracking, registry, deployment)
+- Data analytics (SQL, Python, dashboards)
+- Data modeling & quality (dbt, Great Expectations)
+- LLM applications (RAG, embeddings, vector DBs)
+- Orchestration (Airflow, quality gates)
+- DevOps (Docker, CI/CD)
+- Reliability & safety (drift, anomaly, lineage)
+- Self-serve analytics (semantic modeling, exposures)
+
+---
+
+## 🗂️ Project Structure
+
+```text
+enterprise-ai-workflows/
+├── project1-rapid-insights/
+├── project2-mlops-pipeline/
+├── project3-document-qa/
+├── data-platform/
+├── docs/
+├── scripts/
+├── great_expectations/
+├── gx/
+├── metrics/
+```
+
+---
+
+## 📚 Further Reading
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Full architecture, patterns, and implementation table
+- [DATA_SLA.md](DATA_SLA.md) - Data pipeline SLAs
+- [METRICS.md](METRICS.md) - Canonical metrics
+- [docs/data-lineage.md](docs/data-lineage.md) - Data lineage diagram
+- [data-platform/dbt/README.md](data-platform/README.md) - Data platform details
+
+---
+
+For detailed project usage, see each project's README in its folder.
