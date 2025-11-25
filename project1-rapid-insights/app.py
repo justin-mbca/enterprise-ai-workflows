@@ -11,15 +11,13 @@ from database import DatabaseManager
 from datetime import datetime, timedelta
 import numpy as np
 
-# Page configuration
 st.set_page_config(
     page_title="Enterprise Analytics Dashboard",
     page_icon="📊",
     layout="wide"
 )
 
-# Initialize database
-# Version marker to force cache invalidation on code updates
+# Database initialization and helper functions
 DB_VERSION = "v2.3_force_seasonal_param"
 
 @st.cache_resource
@@ -28,7 +26,6 @@ def init_database(version: str = DB_VERSION):
 
 db = init_database()
 
-# Fallback seeding in case the deployed DatabaseManager is outdated
 def _seed_hr_data_fallback(db_obj: DatabaseManager):
     """Create minimal HR tables and seed a few rows if DatabaseManager lacks seed_hr_data()."""
     try:
@@ -111,9 +108,7 @@ def _seed_hr_data_fallback(db_obj: DatabaseManager):
             )
         conn.commit()
     except Exception:
-        # Silent fallback; actual DatabaseManager.seed_hr_data should handle the full dataset
         pass
-
 
 def _get_hr_payroll_series_fallback(db_obj: DatabaseManager) -> pd.DataFrame:
     """Read payroll time series from SQLite directly and return ['date','value'].
@@ -121,7 +116,6 @@ def _get_hr_payroll_series_fallback(db_obj: DatabaseManager) -> pd.DataFrame:
     """
     conn = getattr(db_obj, 'conn', None)
     if conn is None:
-        # Return empty DataFrame with expected columns
         return pd.DataFrame({"date": pd.to_datetime([]), "value": []})
     try:
         ts_df_local = pd.read_sql_query(
@@ -137,7 +131,6 @@ def _get_hr_payroll_series_fallback(db_obj: DatabaseManager) -> pd.DataFrame:
         ts_df_local['date'] = pd.to_datetime(ts_df_local['date'].astype(str).str[:10])
         return ts_df_local
     except Exception:
-        # Ensure tables exist then retry once
         _seed_hr_data_fallback(db_obj)
         try:
             ts_df_local = pd.read_sql_query(
@@ -148,6 +141,8 @@ def _get_hr_payroll_series_fallback(db_obj: DatabaseManager) -> pd.DataFrame:
             return ts_df_local
         except Exception:
             return pd.DataFrame({"date": pd.to_datetime([]), "value": []})
+
+# Page configuration
 
 # Sidebar
 st.sidebar.title("🚀 Rapid Insights")
@@ -167,23 +162,6 @@ st.markdown("*Powered by open-source AI tools*")
 # PAGE 1: OVERVIEW
 # ============================================================================
 if page == "📊 Overview":
-    st.header("Dashboard Overview")
-    
-    # Metrics row
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric("Total Records", "10,247", "+1,234")
-    with col2:
-        st.metric("Avg Sentiment", "0.65", "+0.05")
-    with col3:
-        st.metric("Forecast Accuracy", "94.2%", "+2.1%")
-    with col4:
-        st.metric("Active Users", "3,456", "+234")
-    
-    # Sample data visualization
-    st.subheader("Sample Customer Feedback Analysis")
-    
     # Generate sample data
     dates = pd.date_range(end=datetime.now(), periods=30, freq='D')
     sample_data = pd.DataFrame({
@@ -192,7 +170,6 @@ if page == "📊 Overview":
         'Neutral': np.random.randint(20, 80, 30),
         'Negative': np.random.randint(10, 50, 30)
     })
-    
     fig = px.area(
         sample_data,
         x='Date',
@@ -201,29 +178,19 @@ if page == "📊 Overview":
         labels={'value': 'Count', 'variable': 'Sentiment'}
     )
     st.plotly_chart(fig, use_container_width=True)
-    
+
     # Key insights
     st.subheader("🎯 Key Insights")
     col1, col2 = st.columns(2)
-    
+
     with col1:
         st.success("✅ Customer satisfaction trending upward")
         st.info("ℹ️ Product mentions increased 23% this month")
-    
-    with col2:
-        st.warning("⚠️ Response time needs improvement")
-        st.success("✅ Sales forecast meets targets")
 
-# ============================================================================
+
 # PAGE 2: SENTIMENT ANALYSIS
 # ============================================================================
 elif page == "💬 Sentiment Analysis":
-    st.header("Sentiment Analysis")
-    st.markdown("*Simulates Snowflake Cortex `SENTIMENT()` function*")
-    
-    # Initialize session state for text input
-
-                    # --- Prompt Engineering Section ---
     st.header("Sentiment Analysis")
     st.markdown("*Simulates Snowflake Cortex `SENTIMENT()` function and now supports prompt engineering*")
 
@@ -269,58 +236,118 @@ elif page == "💬 Sentiment Analysis":
     def render_prompt(text, template):
         return template.replace("{text}", text)
 
+
+    # --- Sentiment Analysis Button and State Persistence ---
     if st.button("🔍 Analyze Sentiment", type="primary"):
         if text_input:
             with st.spinner("Analyzing..."):
-                # Show the prompt used (for demonstration)
                 prompt_used = render_prompt(text_input, st.session_state.sentiment_prompt_template)
-                st.markdown("**Prompt sent to model:**")
-                st.code(prompt_used, language="text")
-                # In a real LLM scenario, you would send prompt_used to the model
-                # For now, we use the original db.analyze_sentiment
+                st.session_state.sentiment_prompt_used = prompt_used
                 result = db.analyze_sentiment(text_input)
-
-                # Display results
-                st.subheader("Analysis Results")
-
-                col1, col2, col3 = st.columns(3)
-
-                with col1:
-                    sentiment_emoji = "😊" if result['sentiment'] > 0 else "😞" if result['sentiment'] < 0 else "😐"
-                    st.metric("Sentiment Score", f"{result['sentiment']:.3f} {sentiment_emoji}")
-
-                with col2:
-                    st.metric("Subjectivity", f"{result['subjectivity']:.3f}")
-
-                with col3:
-                    label = "Positive" if result['sentiment'] > 0.1 else "Negative" if result['sentiment'] < -0.1 else "Neutral"
-                    st.metric("Classification", label)
-
-                # Gauge chart
-                fig = go.Figure(go.Indicator(
-                    mode="gauge+number+delta",
-                    value=result['sentiment'],
-                    domain={'x': [0, 1], 'y': [0, 1]},
-                    title={'text': "Sentiment Score"},
-                    delta={'reference': 0},
-                    gauge={
-                        'axis': {'range': [-1, 1]},
-                        'bar': {'color': "darkblue"},
-                        'steps': [
-                            {'range': [-1, -0.3], 'color': "lightcoral"},
-                            {'range': [-0.3, 0.3], 'color': "lightyellow"},
-                            {'range': [0.3, 1], 'color': "lightgreen"}
-                        ],
-                        'threshold': {
-                            'line': {'color': "red", 'width': 4},
-                            'thickness': 0.75,
-                            'value': 0
-                        }
-                    }
-                ))
-                st.plotly_chart(fig, use_container_width=True)
+                st.session_state.sentiment_result = result
+                st.session_state.sentiment_label = (
+                    "Positive" if result['sentiment'] > 0.1 else "Negative" if result['sentiment'] < -0.1 else "Neutral"
+                )
+                st.session_state.sentiment_text_last = text_input
         else:
-            st.warning("Please enter some text to analyze")
+            st.session_state.sentiment_result = None
+            st.session_state.sentiment_label = None
+            st.session_state.sentiment_prompt_used = None
+            st.session_state.sentiment_text_last = None
+
+    # --- Show Results/Annotation/Feedback if Analysis Exists ---
+    if st.session_state.get("sentiment_result") is not None:
+        result = st.session_state.sentiment_result
+        label = st.session_state.sentiment_label
+        text_input_last = st.session_state.sentiment_text_last
+        prompt_used = st.session_state.sentiment_prompt_used
+
+        st.markdown("**Prompt sent to model:**")
+        st.code(prompt_used, language="text")
+
+        st.subheader("Analysis Results")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            sentiment_emoji = "😊" if result['sentiment'] > 0 else "😞" if result['sentiment'] < 0 else "😐"
+            st.metric("Sentiment Score", f"{result['sentiment']:.3f} {sentiment_emoji}")
+        with col2:
+            st.metric("Subjectivity", f"{result['subjectivity']:.3f}")
+        with col3:
+            st.metric("Classification", label)
+
+        # Gauge chart
+        fig = go.Figure(go.Indicator(
+            mode="gauge+number+delta",
+            value=result['sentiment'],
+            domain={'x': [0, 1], 'y': [0, 1]},
+            title={'text': "Sentiment Score"},
+            delta={'reference': 0},
+            gauge={
+                'axis': {'range': [-1, 1]},
+                'bar': {'color': "darkblue"},
+                'steps': [
+                    {'range': [-1, -0.3], 'color': "lightcoral"},
+                    {'range': [-0.3, 0.3], 'color': "lightyellow"},
+                    {'range': [0.3, 1], 'color': "lightgreen"}
+                ],
+                'threshold': {
+                    'line': {'color': "red", 'width': 4},
+                    'thickness': 0.75,
+                    'value': 0
+                }
+            }
+        ))
+        st.plotly_chart(fig, use_container_width=True)
+
+        # --- Data Annotation UI ---
+        st.markdown("---")
+        st.subheader("📝 Data Annotation: Label the Sentiment")
+        user_label = st.radio(
+            "How would you label the sentiment of this text?",
+            ["Positive", "Neutral", "Negative"],
+            index=["Positive", "Neutral", "Negative"].index(label),
+            key=f"user_label_{text_input_last}"
+        )
+        if st.button("Save Annotation"):
+            import csv, os
+            save_path = "sentiment_annotations.csv"
+            file_exists = os.path.isfile(save_path)
+            with open(save_path, mode="a", newline="") as f:
+                writer = csv.writer(f)
+                if not file_exists:
+                    writer.writerow(["text", "model_sentiment", "user_label", "prompt_template"])
+                writer.writerow([
+                    text_input_last,
+                    label,
+                    user_label,
+                    st.session_state.sentiment_prompt_template
+                ])
+            st.success("Annotation saved! Thank you.")
+
+        # --- Model Performance Feedback UI ---
+        st.markdown("---")
+        st.subheader("🔎 Model Performance Feedback")
+        feedback = st.radio("Was the model's prediction correct?", ["👍 Yes", "👎 No"], key=f"feedback_{text_input_last}")
+        feedback_comment = st.text_input("Comments (optional)", key=f"feedback_comment_{text_input_last}")
+        if st.button("Submit Feedback"):
+            import csv, os
+            feedback_path = "sentiment_feedback.csv"
+            file_exists = os.path.isfile(feedback_path)
+            with open(feedback_path, mode="a", newline="") as f:
+                writer = csv.writer(f)
+                if not file_exists:
+                    writer.writerow(["text", "model_sentiment", "user_label", "feedback", "comment", "prompt_template"])
+                writer.writerow([
+                    text_input_last,
+                    label,
+                    user_label,
+                    feedback,
+                    feedback_comment,
+                    st.session_state.sentiment_prompt_template
+                ])
+            st.success("Feedback submitted! Thank you.")
+    elif st.session_state.get("sentiment_result") is None and st.button("Show Instructions"):
+        st.info("Enter text and click Analyze Sentiment to begin.")
 
 # ============================================================================
 elif page == "📈 Forecasting":

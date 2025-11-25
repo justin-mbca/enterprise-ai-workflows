@@ -41,6 +41,37 @@ A Streamlit app that simulates Snowflake Cortex AI capabilities using open-sourc
 - Pre-loaded with AI functions as SQLite UDFs
 - Sample queries for sentiment analysis, summarization, and HR analytics
 
+## 🚀 New: Prompt Engineering, Data Annotation, RLHF, and Model Feedback
+
+This app now supports advanced human-in-the-loop AI workflows:
+
+### 1. Prompt Engineering
+- Edit the prompt template used for sentiment analysis (with `{text}` placeholder)
+- See the exact prompt sent to the model for each analysis
+- Experiment with prompt wording to observe effects on model output
+
+### 2. Data Annotation
+- After each sentiment analysis, label the true sentiment (Positive, Neutral, Negative)
+- Annotations are saved to `sentiment_annotations.csv` for future training or evaluation
+
+### 3. Model Performance Feedback
+- Provide thumbs up/down feedback on model predictions
+- Optionally add comments about model performance
+- Feedback is saved to `sentiment_feedback.csv` for RLHF or analysis
+
+### 4. RLHF Data Collection
+- All (input, prompt, model output, user label, feedback, comments) are stored
+- These CSVs can be used to train reward models or fine-tune LLMs with human feedback (offline, e.g., with Hugging Face TRL)
+
+**Example RLHF Data Row:**
+| text | model_sentiment | user_label | feedback | comment | prompt_template |
+|------|----------------|------------|----------|---------|----------------|
+| ...  | Positive       | Negative   | 👎 No    | "Missed sarcasm" | ... |
+
+**How to Use:**
+- Edit the prompt, analyze text, label the result, and submit feedback—all in the Sentiment Analysis page
+- Download or process the resulting CSVs for further ML workflows
+
 ## Local Run
 
 ```bash
