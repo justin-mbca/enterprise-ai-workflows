@@ -201,52 +201,6 @@ if page == "📊 Overview":
         labels={'value': 'Count', 'variable': 'Sentiment'}
     )
     st.plotly_chart(fig, use_container_width=True)
-                # --- Data Annotation UI ---
-                st.markdown("---")
-                st.subheader("📝 Data Annotation: Label the Sentiment")
-                annotation = st.radio(
-                    "How would you label the sentiment of this text?",
-                    ["Positive", "Neutral", "Negative"],
-                    index=["Positive", "Neutral", "Negative"].index(label)
-                )
-                if st.button("Save Annotation"):
-                    import csv, os
-                    save_path = "sentiment_annotations.csv"
-                    file_exists = os.path.isfile(save_path)
-                    with open(save_path, mode="a", newline="") as f:
-                        writer = csv.writer(f)
-                        if not file_exists:
-                            writer.writerow(["text", "model_sentiment", "user_label", "prompt_template"])
-                        writer.writerow([
-                            text_input,
-                            label,
-                            annotation,
-                            st.session_state.sentiment_prompt_template
-                        ])
-                    st.success("Annotation saved! Thank you.")
-
-                # --- Model Performance Feedback UI ---
-                st.markdown("---")
-                st.subheader("🔎 Model Performance Feedback")
-                feedback = st.radio("Was the model's prediction correct?", ["👍 Yes", "👎 No"])
-                feedback_comment = st.text_input("Comments (optional)")
-                if st.button("Submit Feedback"):
-                    import csv, os
-                    feedback_path = "sentiment_feedback.csv"
-                    file_exists = os.path.isfile(feedback_path)
-                    with open(feedback_path, mode="a", newline="") as f:
-                        writer = csv.writer(f)
-                        if not file_exists:
-                            writer.writerow(["text", "model_sentiment", "user_label", "feedback", "comment", "prompt_template"])
-                        writer.writerow([
-                            text_input,
-                            label,
-                            annotation,
-                            feedback,
-                            feedback_comment,
-                            st.session_state.sentiment_prompt_template
-                        ])
-                    st.success("Feedback submitted! Thank you.")
     
     # Key insights
     st.subheader("🎯 Key Insights")
