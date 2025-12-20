@@ -103,7 +103,7 @@ jobs:
           python3 scripts/slack_notify.py "$MESSAGE" --level "$LEVEL"
 
       - name: Upload metrics artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: daily-metrics-${{ github.run_number }}
           path: /tmp/metrics.json
