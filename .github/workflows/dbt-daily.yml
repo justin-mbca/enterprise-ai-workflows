@@ -1,6 +1,7 @@
 name: dbt daily pipeline
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'data-platform/dbt/**'
@@ -42,7 +43,7 @@ jobs:
       - name: Publish dbt docs to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          personal_token: ${{ secrets.GH_PAGES_TOKEN }}
           publish_dir: data-platform/dbt/target
           destination_dir: dbt-docs
 
