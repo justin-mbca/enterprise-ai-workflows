@@ -1,83 +1,65 @@
-# 🚀 Enterprise AI Workflows - Free Implementation Guide
+# 🚀 Enterprise AI Workflows
 
-> Learn enterprise AI/ML workflows using **100% free and open-source tools**. Perfect for building your portfolio and demonstrating production-ready skills!
+**Production-grade AI/ML workflows using 100% open-source tools.**
 
-## 🌐 Live Demo Links
+<!-- test commit to trigger all GitHub Actions workflows -->
+## 📦 Projects
 
-### Project 1: Rapid Insights Dashboard
-**🔗 [Live App](https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app)**
-- **What it does:** Interactive Streamlit dashboard for SQL-based analytics with AI-powered insights
-- **Key features:** Time-series forecasting with Prophet, sentiment analysis, SQL query interface
-- **Tech stack:** Streamlit, SQLite, PyCaret, Prophet, Plotly
-- **Use case:** Rapid prototyping and business intelligence for stakeholders
 
-### Project 2: MLOps Pipeline (Customer Churn Prediction)
-**🔗 [MLflow UI](https://zhangju2023-mlops-pipeline-demo.hf.space/mlflow/)** | **🔗 [API Docs](https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs)** | **🔗 [API Health](https://zhangju2023-mlops-pipeline-demo.hf.space/api/health)** | **🔗 [Example Prediction](https://zhangju2023-mlops-pipeline-demo.hf.space/api/predict/example)**
-- **What it does:** Complete ML lifecycle from experimentation to production API deployment
-- **Key features:** Experiment tracking, model registry, versioning, REST API with <200ms latency
-- **Tech stack:** MLflow, FastAPI, PostgreSQL, Docker, scikit-learn
-- **Use case:** Production-grade ML model serving with full observability
+## ⚡ Quick Start
 
-### Project 3: Document Q&A (RAG Application)
-**🔗 [Live App](https://huggingface.co/spaces/zhangju2023/document-qa-rag)**
-- **What it does:** RAG-powered document intelligence for semantic search and compliance Q&A
-- **Key features:** ChromaDB vector store, persistent embeddings, HuggingFace transformers
-- **Tech stack:** LangChain, ChromaDB, SentenceTransformers, Gradio
-- **Use case:** Knowledge mining, policy document search, automated compliance assistance
+```bash
+# Clone and enter the repo
+git clone https://github.com/justin-mbca/enterprise-ai-workflows.git
+cd enterprise-ai-workflows
 
-### Project 4: Data Platform & Analytics Dashboard
-**📊 Run locally** (see [Quick Start](#-quick-start))
-- **What it does:** dbt-powered data modeling layer feeding both RAG and BI applications
-- **Key features:** 7 dbt models, 23 tests, drift detection, anomaly monitoring, data lineage
-- **Tech stack:** dbt Core, DuckDB, Streamlit, Great Expectations, GitHub Actions
-- **Use case:** Self-serve analytics with reliability and quality governance
+# Set up Python environment
+python3 -m venv venv
+source venv/bin/activate
+pip install -r project1-rapid-insights/requirements.txt  # or other project
+
+# Run a demo app
+cd project1-rapid-insights
+streamlit run app.py
+```
+
+## 🧩 Feature Store (Feast)
+
+```bash
+pip install feast
+python scripts/generate_customer_features_parquet.py
+cd feature_store
+feast apply
+feast materialize-incremental $(date +%Y-%m-%d)
+python fetch_customer_features.py
+```
+See [feature_store/README.md](feature_store/README.md) for details.
+
+## 🗂️ Project Structure
+
+```
+enterprise-ai-workflows/
+├── project1-rapid-insights/
+├── project2-mlops-pipeline/
+├── project3-document-qa/
+├── data-platform/
+├── feature_store/
+├── airflow/
+├── great_expectations/
+├── scripts/
+├── docs/
+```
+
+## 📚 Further Reading
+
+- [Setup Guide](docs/setup-guide.md)
+- [Architecture](ARCHITECTURE.md)
+- [Data Lineage](docs/data-lineage.md)
+- [Feature Store](feature_store/README.md)
 
 ---
 
-## 📋 Overview
-
-This repository contains three production-ready projects that demonstrate enterprise AI/ML workflows without expensive licenses:
-
-1. **Rapid Insights Workflow** - SQL-based analytics with AI capabilities
-2. **Enterprise MLOps Pipeline** - Complete ML lifecycle management
-3. **Document Q&A System** - RAG-based LLM application
-4. **Data Platform & Analytics** - dbt-powered curated corpus + Streamlit dashboard feeding RAG & BI layers
-
-## 🎯 What You'll Learn
-
-- **MLOps Best Practices** - Experiment tracking, model registry, deployment
-- **Data Analytics** - SQL, Python, real-time dashboards
-- **Data Modeling & Quality** - dbt transformations, Great Expectations validation
-- **LLM Applications** - RAG pipelines, vector databases, embeddings
-- **Workflow Orchestration** - Airflow DAGs, quality gates, backfills
-- **Cloud Architecture** - Scalable, production-ready patterns
-- **DevOps** - Docker, CI/CD, containerization
-- **Reliability & Safety** - Drift detection, anomaly monitoring, data lineage
-- **Self-Serve Analytics** - Semantic modeling, metrics catalogs, exposures
-
-## 🏗️ Architecture Overview
-
-This portfolio demonstrates **enterprise AI/ML architecture patterns** using open-source tools that mirror industry-standard solutions:
-
-```mermaid
-flowchart TD
-    A[Raw Data Sources] --> B[Data Platform Layer<br/>dbt + DuckDB]
-    B --> C[Quality Gates<br/>dbt tests + Great Expectations]
-    C --> D[Monitoring & Safety<br/>Anomaly + Drift Detection]
-    D --> E[Semantic Layer<br/>Marts + Exposures]
-    E --> F1[Streamlit Dashboard<br/>Self-Serve BI]
-    E --> F2[Vector Store<br/>ChromaDB Embeddings]
-    F2 --> F3[RAG Application<br/>Document Q&A]
-    E --> F4[ML Models<br/>MLflow Registry]
-    F4 --> F5[FastAPI Serving<br/>Production API]
-    
-    style D fill:#fff3cd
-    style E fill:#d4edda
-```
-
-**🔗 See Full Architecture Documentation:** [ARCHITECTURE.md](./ARCHITECTURE.md)
-
-### Key Architectural Patterns Demonstrated:
+**For advanced usage, troubleshooting, and architecture details, see the docs folder.**
 
 | Pattern | Enterprise Tool | Open-Source Implementation | Status |
 |---------|----------------|---------------------------|--------|
@@ -124,14 +106,22 @@ enterprise-ai-workflows/
 │   ├── checkpoints/                # Validation checkpoints
 │   └── README.md
 │
+├── feature_store/                  # Feast feature store (entities, features, scripts)
+│   ├── customer_entity.py          # Feast entity definition
+│   ├── customer_features.py        # Feast feature view definition
+│   ├── fetch_customer_features.py  # Script to fetch features
+│   ├── generate_customer_features_parquet.py # Generate sample data
+│   ├── feature_store.yaml          # Feast config
+│   └── data/                       # Parquet feature data
+│
 ├── airflow/                        # Optional orchestration layer
 │   ├── dags/                       # DAG definitions
 │   └── README.md
 │
 └── docs/                           # Additional documentation
-    ├── setup-guide.md
-    ├── interview-prep.md
-    └── architecture-decisions.md
+  ├── setup-guide.md
+  ├── interview-prep.md
+  └── architecture-decisions.md
 ```
 
 ## 🚀 Quick Start
@@ -157,15 +147,28 @@ cd project1-rapid-insights
 pip install -r requirements.txt
 ```
 
-### End-to-End (Data → Embeddings → RAG → Analytics)
+
+### End-to-End (Data → Features → Embeddings → RAG → Analytics)
 
 ```bash
 # Build curated data (dbt transformations)
 cd data-platform/dbt
 dbt seed && dbt run && dbt test
 
+# Generate sample features for Feast
+cd ../../scripts
+python generate_customer_features_parquet.py
+
+# Apply Feast feature store config and ingest features
+cd ../feature_store
+feast apply
+feast materialize-incremental $(date +%Y-%m-%d)
+
+# Fetch features for ML training/inference
+python fetch_customer_features.py
+
 # Refresh vector store from document_index mart
-cd ../../
+cd ../
 python scripts/refresh_embeddings.py --persist-dir project3-document-qa/chroma_store --reset
 
 # Launch RAG application (consumes persistent Chroma store if present)
@@ -176,6 +179,17 @@ python app.py  # http://localhost:7860
 cd ../data-platform
 streamlit run analytics_dashboard.py  # http://localhost:8502
 ```
+## 🧩 Feature Store Integration (Feast)
+
+This repo now includes a modular feature store powered by Feast for reproducible ML workflows.
+
+**Setup Steps:**
+1. Generate sample feature data: `python scripts/generate_customer_features_parquet.py`
+2. Apply Feast config: `cd feature_store && feast apply`
+3. Materialize features: `feast materialize-incremental $(date +%Y-%m-%d)`
+4. Fetch features: `python fetch_customer_features.py`
+
+See `feature_store/README.md` for details and troubleshooting.
 
 ### One-Command Full Pipeline (dbt + Quality Gates + Embeddings)
 Instead of running each step manually, you can execute the entire data & AI preparation workflow with a single script that:
