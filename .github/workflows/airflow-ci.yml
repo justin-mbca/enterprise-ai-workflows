@@ -51,6 +51,13 @@ jobs:
           airflow tasks test data_platform_pipeline dbt_seed "$EXEC_DATE"
           airflow tasks test data_platform_pipeline dbt_run "$EXEC_DATE"
           airflow tasks test data_platform_pipeline dbt_test "$EXEC_DATE"
+          # Ensure DuckDB file exists before GE validation
+          if [ ! -f "data-platform/dbt/warehouse/data.duckdb" ]; then
+            echo "❌ DuckDB file missing at data-platform/dbt/warehouse/data.duckdb"; exit 1;
+          fi
+          # Run Great Expectations validation via Python script (more robust)
+          REPO_ROOT="$REPO_ROOT" python3 scripts/run_ge_validation.py
+          # Continue with Airflow tasks for full E2E
           airflow tasks test data_platform_pipeline ge_document_index_validation "$EXEC_DATE"
           airflow tasks test data_platform_pipeline refresh_embeddings "$EXEC_DATE"
           airflow tasks test data_platform_pipeline doc_vector_count_check "$EXEC_DATE"
