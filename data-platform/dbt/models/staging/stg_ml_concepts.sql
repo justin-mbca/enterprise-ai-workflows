@@ -1,6 +1,7 @@
 -- Staging model for ML concepts seed
+
 WITH source AS (
-  SELECT * FROM {{ ref('ml_concepts') }}
+  SELECT * FROM {{ source('seeds', 'ml_concepts') }}
 )
 SELECT
   concept_id,
