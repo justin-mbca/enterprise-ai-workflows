@@ -8,3 +8,6 @@ chromadb==0.5.3
 sentence-transformers==2.7.0
 # Data quality validation
 great-expectations==0.18.12
+
+# Required for DAG graph rendering
+graphviz

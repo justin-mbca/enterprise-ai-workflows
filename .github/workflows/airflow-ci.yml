@@ -29,6 +29,8 @@ jobs:
           pip install -r airflow/requirements-airflow.txt
           # Show versions for provenance
           pip freeze | grep -E 'apache-airflow|dbt-core|duckdb|chromadb|sentence-transformers|great-expectations'
+      - name: Install system Graphviz (for DAG rendering)
+        run: sudo apt-get update && sudo apt-get install -y graphviz
 
       - name: Initialize Airflow metadata DB
         run: |
