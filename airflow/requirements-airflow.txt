@@ -11,3 +11,6 @@ great-expectations==0.18.12
 
 # Required for DAG graph rendering
 graphviz
+
+# Required for dbt DuckDB adapter
+dbt-duckdb
