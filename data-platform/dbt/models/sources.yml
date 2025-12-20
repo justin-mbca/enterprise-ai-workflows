@@ -3,7 +3,6 @@ version: 2
 sources:
   - name: seed_data
     description: "CSV seed files representing raw source data for staging models (freshness checks require timestamp column; seeds don't have loaded_at by default)"
-    database: main
     schema: main
     # Note: Freshness checks commented out for seed-based sources without loaded_at column
     # In production with external ingestion, add loaded_at_field and enable freshness
