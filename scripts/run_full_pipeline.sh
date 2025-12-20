@@ -53,6 +53,13 @@ echo -e "${BLUE}🔍 STEP 4: Great Expectations - Semantic quality gate${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 cd "$REPO_ROOT"
 
+# Ensure DuckDB file exists before GE validation
+mkdir -p "$REPO_ROOT/data-platform/dbt/warehouse"
+if [ ! -f "$REPO_ROOT/data-platform/dbt/warehouse/data.duckdb" ]; then
+    echo -e "${YELLOW}⚠️  DuckDB file missing, creating empty database...${NC}"
+    duckdb "$REPO_ROOT/data-platform/dbt/warehouse/data.duckdb" "SELECT 1;"
+fi
+
 # Run manual validation (more reliable than GE runtime for this demo)
 python3 << 'PYEOF'
 import duckdb
@@ -98,9 +105,9 @@ if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ Great Expectations validation passed${NC}\n"
 else
     echo -e "${RED}❌ Quality gate failed - stopping pipeline${NC}"
-        if [ -n "$SLACK_WEBHOOK_URL" ]; then
-            python3 "$REPO_ROOT/scripts/slack_notify.py" "Quality gate failed during pipeline run (dbt + semantic checks) at commit $(git -C "$REPO_ROOT" rev-parse --short HEAD)." failure || true
-        fi
+    if [ -n "$SLACK_WEBHOOK_URL" ]; then
+        python3 "$REPO_ROOT/scripts/slack_notify.py" "Quality gate failed during pipeline run (dbt + semantic checks) at commit $(git -C "$REPO_ROOT" rev-parse --short HEAD)." failure || true
+    fi
     exit 1
 fi
 
