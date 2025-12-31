@@ -42,6 +42,7 @@ enterprise-ai-workflows/
 ├── project1-rapid-insights/
 ├── project2-mlops-pipeline/
 ├── project3-document-qa/
+├── project4-healthcare-streaming/
 ├── data-platform/
 ├── feature_store/
 ├── airflow/
@@ -327,6 +328,114 @@ streamlit run analytics_dashboard.py
 ```
 Tabs: Overview, HR Policies, Arbitration Timelines, Document Index (export CSV/JSON).
 
+### Project 4: Real-Time Healthcare Data Streaming
+
+**Simulates:** AWS HealthLake, Real-time patient monitoring, Medical device integration  
+**Tech Stack:** Apache Kafka, Apache Flink, Spark Streaming, AWS Kinesis, Terraform  
+**Features:**
+
+#### Streaming Technologies
+- **Apache Kafka**: Distributed event streaming (1M+ messages/sec capability)
+  - 3-broker production-like cluster
+  - 9 configured topics for medical data
+  - Exactly-once processing semantics
+- **Apache Flink**: Real-time stream processing with CEP (Complex Event Processing)
+  - <100ms processing latency
+  - Checkpointing and fault tolerance
+  - Windowed aggregations (tumbling, sliding, session)
+- **Spark Streaming**: Structured streaming for HL7/FHIR data processing
+  - HL7 v2.x message parsing
+  - Micro-batch processing (5-10 seconds)
+  - Delta Lake integration
+- **AWS Kinesis**: Managed streaming infrastructure
+  - Kinesis Data Streams for ingestion
+  - Kinesis Data Firehose for delivery to S3
+  - Auto-scaling and serverless
+
+#### AWS Services Integration
+- **Amazon MSK**: Fully managed Kafka service
+- **AWS Lambda**: Event-driven processing with Kinesis triggers
+- **AWS Glue Streaming**: Continuous ETL jobs
+- **AWS IoT Core**: Medical device connectivity (MQTT protocol)
+- **DynamoDB**: Device registry and patient metadata
+- **S3 Data Lake**: Long-term storage with encryption
+
+#### Healthcare Use Cases
+- **Real-time Patient Monitoring**: Continuous vitals monitoring from ECG, glucose meters, blood pressure monitors
+- **Medical Device Integration**: Process data from multiple device types simultaneously
+- **HL7 v2.x Processing**: Parse and validate HL7 messages (ADT, ORU, ORM message types)
+- **FHIR R4 Streaming**: Process FHIR Observation resources
+- **Clinical Alerting**: Automated detection of critical conditions
+  - Abnormal heart rates (bradycardia, tachycardia, arrhythmias)
+  - Severe hypoglycemia/hyperglycemia
+  - Hypertensive crisis
+  - Low oxygen saturation
+- **Remote Patient Monitoring (RPM)**: Home medical device data collection
+
+#### Key Features
+- **HIPAA Compliance**: TLS encryption in transit, AES-256 at rest, audit logging
+- **Fault Tolerance**: Kafka replication factor 3, Flink checkpointing, Spark recovery
+- **Scalability**: Horizontal scaling via partitions/shards, auto-scaling on AWS
+- **Infrastructure as Code**: Complete Terraform configuration for AWS deployment
+- **Monitoring & Observability**: Prometheus + Grafana dashboards
+- **Time-Series Storage**: TimescaleDB for medical readings with automatic partitioning
+
+**Run it locally:**
+```bash
+cd project4-healthcare-streaming
+
+# Start complete streaming stack (Kafka, Flink, Spark, databases)
+docker-compose up -d
+
+# Generate synthetic medical device data
+pip install -r healthcare_data/requirements.txt
+python healthcare_data/fhir_patient_generator.py --count 1000
+
+# Start Kafka producer (simulates medical devices)
+pip install -r kafka_streams/requirements.txt
+python kafka_streams/producer_medical_devices.py --devices 10 --rate 100
+
+# Start consumer (processes and validates data)
+python kafka_streams/consumer_realtime_processing.py
+
+# Access monitoring dashboards
+# Kafka UI: http://localhost:8080
+# Flink Web UI: http://localhost:8082
+# Spark UI: http://localhost:8083
+# Grafana: http://localhost:3000 (admin/admin)
+```
+
+**Deploy to AWS:**
+```bash
+cd project4-healthcare-streaming/terraform_aws
+
+# Initialize Terraform
+terraform init
+
+# Review infrastructure plan
+terraform plan -var environment=dev
+
+# Deploy (creates Kinesis, Lambda, MSK, DynamoDB, S3, etc.)
+terraform apply -var environment=dev
+```
+
+**Performance Characteristics:**
+- Kafka: 10,000+ messages/second per topic
+- Flink: <100ms processing latency
+- Spark: 5-10 second micro-batch intervals
+- End-to-end latency: 3-4 seconds from device to storage
+
+**Cost Estimates:**
+- Development (8 hrs/day): ~$500/month
+- Production (24/7): ~$4,000/month
+
+See [`project4-healthcare-streaming/README.md`](./project4-healthcare-streaming/README.md) for complete documentation including:
+- Detailed architecture diagrams
+- Component responsibilities
+- Security and compliance details
+- Troubleshooting guide
+- Performance tuning tips
+
 ## 💰 Cost Breakdown
 
 | Component | Enterprise Tool | Free Alternative | Savings |
@@ -527,7 +636,8 @@ python -m venv venv && source venv/bin/activate
 - **Project 1: Rapid Insights Dashboard** ([Live App](https://enterprise-ai-workflows-d3ds3rasntycg5bwaqru5a.streamlit.app))
 - **Project 2: MLOps Pipeline** ([MLflow UI](https://zhangju2023-mlops-pipeline-demo.hf.space/mlflow/), [API Docs](https://zhangju2023-mlops-pipeline-demo.hf.space/api/docs))
 - **Project 3: Document Q&A (RAG)** ([Live App](https://huggingface.co/spaces/zhangju2023/document-qa-rag))
-- **Project 4: Data Platform & Analytics Dashboard** (Run locally)
+- **Project 4: Real-Time Healthcare Data Streaming** (Docker Compose - Run locally)
+- **Data Platform & Analytics Dashboard** (Run locally)
 
 ---
 
@@ -550,6 +660,7 @@ cd enterprise-ai-workflows
 | **Rapid Insights** | Streamlit dashboard for SQL analytics, forecasting, sentiment, prompt engineering, annotation, RLHF | Streamlit, SQLite, Prophet, Plotly | [project1-rapid-insights/README.md](project1-rapid-insights/README.md) |
 | **MLOps Pipeline** | End-to-end ML lifecycle: training, tracking, registry, FastAPI serving, CI/CD | MLflow, FastAPI, Docker, scikit-learn | [project2-mlops-pipeline/README.md](project2-mlops-pipeline/README.md) |
 | **Document Q&A (RAG)** | RAG-powered semantic search and Q&A over documents | LangChain, ChromaDB, Gradio | [project3-document-qa/README.md](project3-document-qa/README.md) |
+| **Healthcare Streaming** | Production-grade streaming data platform for medical device integration and real-time analytics | Kafka, Flink, Spark, AWS Kinesis, Terraform | [project4-healthcare-streaming/README.md](project4-healthcare-streaming/README.md) |
 | **Data Platform & Analytics** | dbt-powered data modeling, tests, drift/anomaly detection, BI dashboard | dbt, DuckDB, Streamlit, Great Expectations | [data-platform/README.md](data-platform/README.md) |
 
 ---
@@ -600,6 +711,7 @@ enterprise-ai-workflows/
 ├── project1-rapid-insights/
 ├── project2-mlops-pipeline/
 ├── project3-document-qa/
+├── project4-healthcare-streaming/
 ├── data-platform/
 ├── docs/
 ├── scripts/

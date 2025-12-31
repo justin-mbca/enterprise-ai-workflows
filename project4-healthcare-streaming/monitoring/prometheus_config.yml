@@ -1,0 +1,64 @@
+# Prometheus Configuration for Medical Streaming Infrastructure
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'medical-streaming'
+    environment: 'development'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - "alerting_rules.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Kafka JMX Metrics
+  - job_name: 'kafka'
+    static_configs:
+      - targets:
+          - 'kafka-broker-1:19092'
+          - 'kafka-broker-2:19093'
+          - 'kafka-broker-3:19094'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '([^:]+):.*'
+        replacement: '${1}'
+
+  # Flink Metrics
+  - job_name: 'flink'
+    static_configs:
+      - targets:
+          - 'flink-jobmanager:8081'
+    metrics_path: '/metrics'
+
+  # Spark Metrics
+  - job_name: 'spark'
+    static_configs:
+      - targets:
+          - 'spark-master:8080'
+
+  # PostgreSQL Metrics (via postgres_exporter)
+  - job_name: 'postgres'
+    static_configs:
+      - targets:
+          - 'postgres:9187'
+    
+  # Application Metrics (custom exporters)
+  - job_name: 'medical-streaming-apps'
+    static_configs:
+      - targets:
+          - 'localhost:9090'
+    
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets:
+          - 'localhost:9090'
