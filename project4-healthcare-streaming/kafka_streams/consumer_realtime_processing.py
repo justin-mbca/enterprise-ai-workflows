@@ -9,7 +9,7 @@ import logging
 import signal
 import sys
 from datetime import datetime, timezone
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 import argparse
 
 from kafka import KafkaConsumer
@@ -134,7 +134,7 @@ class MedicalDataConsumer:
             logger.error(f"Error creating tables: {e}")
             self.db_conn.rollback()
     
-    def validate_reading(self, reading: Dict) -> tuple[bool, List[str]]:
+    def validate_reading(self, reading: Dict) -> Tuple[bool, List[str]]:
         """
         Validate medical reading
         

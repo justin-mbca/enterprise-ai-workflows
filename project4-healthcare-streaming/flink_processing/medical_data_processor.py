@@ -30,7 +30,9 @@ class MedicalDataParser(MapFunction):
             data = json.loads(value)
             return data
         except Exception as e:
-            logger.error(f"Error parsing data: {e}")
+            # Log truncated data for debugging (first 200 chars)
+            data_preview = value[:200] if len(value) > 200 else value
+            logger.error(f"Error parsing data: {e}. Data preview: {data_preview}")
             return None
 
 

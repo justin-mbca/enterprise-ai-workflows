@@ -47,7 +47,7 @@ services:
       KAFKA_JMX_HOSTNAME: localhost
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
       KAFKA_LOG4J_ROOT_LOGLEVEL: WARN
-      KAFKA_HEAP_OPTS: "-Xmx1G -Xms1G"
+      KAFKA_HEAP_OPTS: "-Xmx2G -Xms2G"
     volumes:
       - kafka-1-data:/var/lib/kafka/data
     networks:
@@ -81,7 +81,7 @@ services:
       KAFKA_JMX_HOSTNAME: localhost
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
       KAFKA_LOG4J_ROOT_LOGLEVEL: WARN
-      KAFKA_HEAP_OPTS: "-Xmx1G -Xms1G"
+      KAFKA_HEAP_OPTS: "-Xmx2G -Xms2G"
     volumes:
       - kafka-2-data:/var/lib/kafka/data
     networks:
@@ -115,7 +115,7 @@ services:
       KAFKA_JMX_HOSTNAME: localhost
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
       KAFKA_LOG4J_ROOT_LOGLEVEL: WARN
-      KAFKA_HEAP_OPTS: "-Xmx1G -Xms1G"
+      KAFKA_HEAP_OPTS: "-Xmx2G -Xms2G"
     volumes:
       - kafka-3-data:/var/lib/kafka/data
     networks:

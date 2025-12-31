@@ -57,7 +57,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "raw_data" {
     }
     
     expiration {
-      days = 2555  # 7 years for HIPAA compliance
+      days = 2555  # 7 years (7 * 365) for HIPAA compliance
     }
   }
 }
