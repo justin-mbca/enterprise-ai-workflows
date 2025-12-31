@@ -9,6 +9,13 @@ from typing import Any, Dict, List
 
 import requests
 
+# Optional dependency for system metrics
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
+
 
 def collect_kafka_metrics() -> Dict[str, Any]:
     """Collect Kafka JMX metrics
@@ -127,7 +134,8 @@ def collect_system_metrics() -> Dict[str, Any]:
     Returns:
         Dictionary containing system metrics
     """
-    import psutil
+    if not PSUTIL_AVAILABLE:
+        raise ImportError("psutil not available")
 
     metrics = {
         "cpu_percent": psutil.cpu_percent(interval=1),
