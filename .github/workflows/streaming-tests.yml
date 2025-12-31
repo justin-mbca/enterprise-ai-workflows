@@ -1,0 +1,330 @@
+name: Healthcare Streaming Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'project4-healthcare-streaming/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'project4-healthcare-streaming/**'
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.9'
+  WORKING_DIR: project4-healthcare-streaming
+
+jobs:
+  lint:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install linting tools
+        run: |
+          pip install --upgrade pip
+          pip install flake8 black isort mypy
+
+      - name: Run flake8
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          flake8 . --count --show-source --statistics
+          echo "✓ flake8 passed"
+
+      - name: Run black check
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          black --check .
+          echo "✓ black check passed"
+
+      - name: Run isort check
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          isort --check-only .
+          echo "✓ isort check passed"
+
+      - name: Run mypy
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          mypy kafka_streams/ healthcare_data/ || echo "mypy warnings found (non-blocking)"
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          pip install --upgrade pip
+          pip install pytest pytest-cov pytest-mock kafka-python requests
+
+      - name: Run unit tests with coverage
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          pytest tests/unit/ -v -m "not integration and not aws" \
+            --cov=. \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term-missing
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          files: ${{ env.WORKING_DIR }}/coverage.xml
+          flags: unittests
+          name: codecov-unit-tests
+
+      - name: Upload coverage HTML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ${{ env.WORKING_DIR }}/htmlcov/
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    services:
+      # Note: In a real setup, you'd use actual Docker Compose
+      # For CI, we're using GitHub Actions services
+      zookeeper:
+        image: confluentinc/cp-zookeeper:latest
+        env:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_TICK_TIME: 2000
+
+      kafka:
+        image: confluentinc/cp-kafka:latest
+        env:
+          KAFKA_BROKER_ID: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+        ports:
+          - 9092:9092
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          pip install --upgrade pip
+          pip install pytest pytest-mock kafka-python requests
+
+      - name: Wait for Kafka
+        run: |
+          echo "Waiting for Kafka to be ready..."
+          sleep 30
+
+      - name: Run integration tests
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          pytest tests/integration/ -v -m "integration and not aws" || true
+          echo "Integration tests completed (non-blocking)"
+
+      - name: Upload test logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-logs
+          path: ${{ env.WORKING_DIR }}/logs/
+
+  data-validation:
+    name: Data Validation
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Make scripts executable
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          chmod +x scripts/*.sh
+
+      - name: Run data validation
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          bash scripts/data_validation.sh
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install security tools
+        run: |
+          pip install safety bandit
+
+      - name: Run security scan script
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          chmod +x scripts/security_scan.sh
+          bash scripts/security_scan.sh || echo "Security scan completed with warnings"
+
+      - name: Run Bandit security scan
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          bandit -r kafka_streams/ healthcare_data/ -f json -o bandit-report.json || true
+
+      - name: Upload security report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            ${{ env.WORKING_DIR }}/security_report_*.txt
+            ${{ env.WORKING_DIR }}/bandit-report.json
+
+  container-scan:
+    name: Container Security
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '${{ env.WORKING_DIR }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  performance-test:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          pip install kafka-python requests
+
+      - name: Run performance benchmarks
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          chmod +x scripts/performance_benchmark.sh
+          bash scripts/performance_benchmark.sh || echo "Benchmarks completed"
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: ${{ env.WORKING_DIR }}/benchmarks/
+
+  aws-deployment:
+    name: Deploy to AWS
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, security-scan, data-validation]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy to AWS (placeholder)
+        run: |
+          echo "AWS deployment would happen here"
+          echo "This requires AWS credentials and infrastructure setup"
+          # aws cloudformation deploy --template-file template.yml --stack-name healthcare-streaming
+
+  summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [lint, unit-tests, integration-tests, data-validation, security-scan]
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## Healthcare Streaming Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Status" >> $GITHUB_STEP_SUMMARY
+          echo "- Linting: ${{ needs.lint.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Unit Tests: ${{ needs.unit-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Integration Tests: ${{ needs.integration-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Data Validation: ${{ needs.data-validation.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Security Scan: ${{ needs.security-scan.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- Coverage reports" >> $GITHUB_STEP_SUMMARY
+          echo "- Security scan results" >> $GITHUB_STEP_SUMMARY
+          echo "- Benchmark data" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,99 @@
+[
+  {
+    "patient_id": "patient-001",
+    "device_id": "monitor-1234",
+    "timestamp": "2023-12-31T12:00:00Z",
+    "location": "ICU",
+    "vitals": {
+      "heart_rate": 72,
+      "blood_pressure_systolic": 120,
+      "blood_pressure_diastolic": 80,
+      "temperature": 98.6,
+      "respiratory_rate": 16,
+      "oxygen_saturation": 98
+    },
+    "alerts": []
+  },
+  {
+    "patient_id": "patient-002",
+    "device_id": "monitor-5678",
+    "timestamp": "2023-12-31T12:01:00Z",
+    "location": "ER",
+    "vitals": {
+      "heart_rate": 95,
+      "blood_pressure_systolic": 145,
+      "blood_pressure_diastolic": 92,
+      "temperature": 99.2,
+      "respiratory_rate": 22,
+      "oxygen_saturation": 94
+    },
+    "alerts": [
+      {
+        "type": "high_blood_pressure",
+        "severity": "warning",
+        "message": "Blood pressure elevated"
+      }
+    ]
+  },
+  {
+    "patient_id": "patient-003",
+    "device_id": "monitor-9012",
+    "timestamp": "2023-12-31T12:02:00Z",
+    "location": "Ward-A",
+    "vitals": {
+      "heart_rate": 65,
+      "blood_pressure_systolic": 118,
+      "blood_pressure_diastolic": 78,
+      "temperature": 98.4,
+      "respiratory_rate": 14,
+      "oxygen_saturation": 99
+    },
+    "alerts": []
+  },
+  {
+    "patient_id": "patient-004",
+    "device_id": "monitor-3456",
+    "timestamp": "2023-12-31T12:03:00Z",
+    "location": "ICU",
+    "vitals": {
+      "heart_rate": 110,
+      "blood_pressure_systolic": 90,
+      "blood_pressure_diastolic": 60,
+      "temperature": 100.1,
+      "respiratory_rate": 28,
+      "oxygen_saturation": 88
+    },
+    "alerts": [
+      {
+        "type": "low_oxygen_saturation",
+        "severity": "critical",
+        "message": "Oxygen saturation below 90%"
+      },
+      {
+        "type": "tachycardia",
+        "severity": "warning",
+        "message": "Heart rate elevated"
+      },
+      {
+        "type": "fever",
+        "severity": "warning",
+        "message": "Temperature above 100°F"
+      }
+    ]
+  },
+  {
+    "patient_id": "patient-005",
+    "device_id": "monitor-7890",
+    "timestamp": "2023-12-31T12:04:00Z",
+    "location": "Ward-B",
+    "vitals": {
+      "heart_rate": 78,
+      "blood_pressure_systolic": 125,
+      "blood_pressure_diastolic": 82,
+      "temperature": 98.7,
+      "respiratory_rate": 18,
+      "oxygen_saturation": 97
+    },
+    "alerts": []
+  }
+]

@@ -72,3 +72,13 @@ confusion_matrix_*.png
 feature_importance_*.png
 eda_churn_analysis.png
 model_comparison.png
+
+# Project 4 - Healthcare Streaming
+project4-healthcare-streaming/.pytest_cache/
+project4-healthcare-streaming/htmlcov/
+project4-healthcare-streaming/.coverage
+project4-healthcare-streaming/.mypy_cache/
+project4-healthcare-streaming/benchmarks/*.json
+project4-healthcare-streaming/reports/*.json
+project4-healthcare-streaming/security_report_*.txt
+!project4-healthcare-streaming/tests/fixtures/*.json
