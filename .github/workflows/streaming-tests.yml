@@ -11,6 +11,9 @@ on:
     paths:
       - 'project4-healthcare-streaming/**'
 
+permissions:
+  contents: read
+
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
