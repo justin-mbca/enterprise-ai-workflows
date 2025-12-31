@@ -1,0 +1,75 @@
+{
+  "expectation_suite_name": "document_index_suite",
+  "expectations": [
+    {
+      "expectation_type": "expect_table_row_count_to_be_between",
+      "kwargs": {
+        "min_value": 20,
+        "max_value": 25
+      },
+      "meta": {
+        "notes": "Document index should contain 20-25 documents from HR, arbitration, and ML domains"
+      }
+    },
+    {
+      "expectation_type": "expect_table_columns_to_match_ordered_list",
+      "kwargs": {
+        "column_list": ["id", "domain", "text"]
+      },
+      "meta": {
+        "notes": "Schema must match: id, domain, text"
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "id"
+      },
+      "meta": {
+        "notes": "ID column must not contain nulls"
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "domain"
+      },
+      "meta": {
+        "notes": "Domain column must not contain nulls"
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "text"
+      },
+      "meta": {
+        "notes": "Text column must not contain nulls"
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_unique",
+      "kwargs": {
+        "column": "id"
+      },
+      "meta": {
+        "notes": "All IDs must be unique"
+      }
+    },
+    {
+      "expectation_type": "expect_column_value_lengths_to_be_between",
+      "kwargs": {
+        "column": "text",
+        "min_value": 50,
+        "max_value": 300
+      },
+      "meta": {
+        "notes": "Text length should be between 50-300 characters"
+      }
+    }
+  ],
+  "data_asset_type": "Dataset",
+  "meta": {
+    "great_expectations_version": "0.18.12"
+  }
+}
