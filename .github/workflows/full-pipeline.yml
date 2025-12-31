@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install dbt-core dbt-duckdb great-expectations chromadb sentence-transformers streamlit
+          pip install dbt-core dbt-duckdb great-expectations chromadb sentence-transformers streamlit sqlalchemy-duckdb
 
       - name: Run full pipeline script
         run: |

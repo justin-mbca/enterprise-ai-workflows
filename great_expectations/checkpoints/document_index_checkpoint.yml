@@ -9,7 +9,7 @@ validations:
       data_asset_name: document_index
       runtime_parameters:
         query: |
-          SELECT doc_id, domain, text, source_table
+          SELECT id, domain, text
           FROM main_marts.document_index
       batch_identifiers:
         default_identifier_name: daily_run
