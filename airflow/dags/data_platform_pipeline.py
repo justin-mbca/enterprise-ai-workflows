@@ -38,7 +38,7 @@ except ImportError:
 
 
 def _resolve_paths():
-    repo_root = Variable.get("REPO_ROOT", default_var=os.getenv("REPO_ROOT", "/Users/justin/enterprise-ai-workflows"))
+    repo_root = Variable.get("REPO_ROOT", default_var=os.getenv("REPO_ROOT", os.getcwd()))
     chroma_dir = Variable.get(
         "CHROMA_DIR", default_var=os.getenv("CHROMA_DIR", os.path.join(repo_root, "project3-document-qa", "chroma_store"))
     )
