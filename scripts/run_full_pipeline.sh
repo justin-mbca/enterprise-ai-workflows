@@ -65,7 +65,10 @@ python3 << 'PYEOF'
 import duckdb
 import sys
 
-con = duckdb.connect('/Users/justin/enterprise-ai-workflows/data-platform/dbt/warehouse/data.duckdb')
+import os
+repo_root = os.environ.get('REPO_ROOT', '/home/runner/work/enterprise-ai-workflows/enterprise-ai-workflows')
+duckdb_path = os.path.join(repo_root, 'data-platform/dbt/warehouse/data.duckdb')
+con = duckdb.connect(duckdb_path)
 
 print("Running data quality validations...\n")
 
@@ -190,7 +193,8 @@ python3 << 'PYEOF'
 import sys
 import os
 
-chroma_dir = "/Users/justin/enterprise-ai-workflows/project3-document-qa/chroma_store"
+repo_root = os.environ.get('REPO_ROOT', '/home/runner/work/enterprise-ai-workflows/enterprise-ai-workflows')
+chroma_dir = os.path.join(repo_root, 'project3-document-qa/chroma_store')
 
 if not os.path.exists(chroma_dir):
     print(f"⚠️  Chroma store not found at {chroma_dir}")

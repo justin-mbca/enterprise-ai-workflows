@@ -14,3 +14,6 @@ graphviz
 
 # Required for dbt DuckDB adapter
 dbt-duckdb
+
+# Required for Great Expectations DuckDB datasource
+sqlalchemy-duckdb>=0.2.0
