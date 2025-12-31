@@ -1,0 +1,64 @@
+---
+# Flink Job Configuration
+job:
+  name: "medical-data-processor"
+  parallelism: 4
+  
+# Checkpointing Configuration
+checkpointing:
+  interval: 60000  # 60 seconds
+  timeout: 600000  # 10 minutes
+  mode: "EXACTLY_ONCE"
+  min_pause_between: 5000  # 5 seconds
+  max_concurrent: 1
+  tolerable_failure_count: 3
+  
+# State Backend Configuration
+state:
+  backend: "rocksdb"
+  checkpoints_dir: "file:///tmp/flink-checkpoints"
+  savepoints_dir: "file:///tmp/flink-savepoints"
+  incremental: true
+  
+# Restart Strategy
+restart_strategy:
+  type: "fixed-delay"
+  attempts: 3
+  delay: 10000  # 10 seconds
+  
+# Resource Configuration
+resources:
+  task_managers: 2
+  task_slots: 4
+  job_manager:
+    memory: "1600m"
+  task_manager:
+    memory: "1728m"
+    
+# Kafka Configuration
+kafka:
+  bootstrap_servers: "kafka-broker-1:29092,kafka-broker-2:29093,kafka-broker-3:29094"
+  consumer_group: "flink-medical-processor"
+  topics:
+    source:
+      - "medical-devices-ecg"
+      - "medical-devices-glucose"
+      - "medical-devices-vitals"
+    sink:
+      - "medical-alerts-critical"
+      - "medical-aggregated-vitals"
+      
+# Windowing Configuration
+windowing:
+  tumbling:
+    size: 300000  # 5 minutes in milliseconds
+  sliding:
+    size: 600000  # 10 minutes
+    slide: 300000  # 5 minutes
+  session:
+    gap: 30000  # 30 seconds
+    
+# Watermark Configuration
+watermark:
+  max_out_of_orderness: 5000  # 5 seconds
+  idle_timeout: 60000  # 1 minute

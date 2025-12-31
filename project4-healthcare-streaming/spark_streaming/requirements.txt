@@ -1,0 +1,12 @@
+# Spark Streaming Requirements
+pyspark==3.5.0
+
+# Kafka
+kafka-python==2.0.2
+
+# Data Processing
+pandas==2.1.4
+numpy==1.26.2
+
+# HL7 Parsing
+python-hl7==0.4.5

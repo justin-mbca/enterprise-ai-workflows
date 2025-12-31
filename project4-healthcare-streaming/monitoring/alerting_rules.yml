@@ -1,0 +1,123 @@
+# Alert Rules for Medical Streaming Infrastructure
+
+groups:
+  - name: kafka_alerts
+    interval: 30s
+    rules:
+      - alert: HighConsumerLag
+        expr: kafka_consumergroup_lag > 1000
+        for: 5m
+        labels:
+          severity: warning
+          component: kafka
+        annotations:
+          summary: "High consumer lag detected"
+          description: "Consumer group {{ $labels.consumergroup }} has lag of {{ $value }} messages on topic {{ $labels.topic }}"
+      
+      - alert: KafkaBrokerDown
+        expr: up{job="kafka"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: kafka
+        annotations:
+          summary: "Kafka broker is down"
+          description: "Kafka broker {{ $labels.instance }} has been down for more than 2 minutes"
+      
+      - alert: HighDiskUsage
+        expr: kafka_server_BrokerTopicMetrics_BytesInPerSec > 100000000
+        for: 5m
+        labels:
+          severity: warning
+          component: kafka
+        annotations:
+          summary: "High disk usage on Kafka broker"
+          description: "Broker {{ $labels.instance }} receiving {{ $value }} bytes/sec"
+
+  - name: flink_alerts
+    interval: 30s
+    rules:
+      - alert: FlinkJobFailed
+        expr: flink_jobmanager_job_uptime == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: flink
+        annotations:
+          summary: "Flink job has failed"
+          description: "Flink job {{ $labels.job_name }} on {{ $labels.instance }} has failed"
+      
+      - alert: HighBackpressure
+        expr: flink_taskmanager_job_task_backPressuredTimeMsPerSecond > 500
+        for: 5m
+        labels:
+          severity: warning
+          component: flink
+        annotations:
+          summary: "High backpressure in Flink job"
+          description: "Task {{ $labels.task_name }} experiencing backpressure: {{ $value }}ms/sec"
+      
+      - alert: CheckpointFailure
+        expr: increase(flink_jobmanager_job_numberOfFailedCheckpoints[5m]) > 3
+        labels:
+          severity: warning
+          component: flink
+        annotations:
+          summary: "Multiple checkpoint failures"
+          description: "Job {{ $labels.job_name }} had {{ $value }} failed checkpoints in 5 minutes"
+
+  - name: medical_data_alerts
+    interval: 30s
+    rules:
+      - alert: CriticalVitalsDetected
+        expr: rate(medical_critical_alerts_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: high
+          component: medical
+        annotations:
+          summary: "High rate of critical vital signs"
+          description: "Detecting {{ $value }} critical vitals per second"
+      
+      - alert: HighDataProcessingLatency
+        expr: histogram_quantile(0.95, rate(medical_processing_duration_seconds_bucket[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+          component: medical
+        annotations:
+          summary: "High data processing latency"
+          description: "95th percentile latency is {{ $value }} seconds"
+      
+      - alert: DataPipelineStalled
+        expr: rate(medical_messages_processed_total[5m]) == 0
+        for: 5m
+        labels:
+          severity: critical
+          component: medical
+        annotations:
+          summary: "Data pipeline appears stalled"
+          description: "No messages processed in the last 5 minutes"
+
+  - name: infrastructure_alerts
+    interval: 30s
+    rules:
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "High memory usage"
+          description: "Node {{ $labels.instance }} memory usage is {{ $value }}%"
+      
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "High CPU usage"
+          description: "Node {{ $labels.instance }} CPU usage is {{ $value }}%"
