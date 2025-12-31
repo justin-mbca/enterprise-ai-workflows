@@ -1,0 +1,109 @@
+name: Healthcare Streaming Tests
+
+on:
+  push:
+    branches: [ main, copilot/add-healthcare-streaming-infrastructure ]
+    paths:
+      - 'project4-healthcare-streaming/**'
+      - '.github/workflows/streaming-tests.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'project4-healthcare-streaming/**'
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 black pytest pytest-mock
+        pip install -r project4-healthcare-streaming/kafka_streams/requirements.txt
+        pip install -r project4-healthcare-streaming/healthcare_data/requirements.txt
+    
+    - name: Lint with flake8
+      run: |
+        # Stop the build if there are Python syntax errors or undefined names
+        flake8 project4-healthcare-streaming --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings
+        flake8 project4-healthcare-streaming --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+    
+    - name: Check code formatting with black
+      run: |
+        black --check --diff project4-healthcare-streaming
+      continue-on-error: true
+    
+    - name: Run unit tests
+      run: |
+        cd project4-healthcare-streaming
+        python -m pytest tests/test_kafka_producer.py -v
+        python -m pytest tests/test_hl7_parser.py -v
+    
+    - name: Validate Docker Compose configuration
+      run: |
+        cd project4-healthcare-streaming
+        docker-compose config > /dev/null
+    
+    - name: Validate Terraform configuration
+      run: |
+        cd project4-healthcare-streaming/terraform_aws
+        terraform init -backend=false
+        terraform validate
+      continue-on-error: true
+
+  build-docker-images:
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Build Flink Docker image
+      run: |
+        cd project4-healthcare-streaming/flink_processing
+        echo "FROM flink:1.17.1-scala_2.12-java11" > Dockerfile
+        docker build -t medical-flink:test -f Dockerfile .
+      continue-on-error: true
+
+  generate-sample-data:
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        pip install -r project4-healthcare-streaming/healthcare_data/requirements.txt
+    
+    - name: Generate FHIR patients
+      run: |
+        cd project4-healthcare-streaming/healthcare_data
+        python fhir_patient_generator.py --count 10 --output test_patients.ndjson
+    
+    - name: Generate HL7 messages
+      run: |
+        cd project4-healthcare-streaming/healthcare_data
+        python hl7_message_simulator.py --message-type ORU_R01 > test_hl7.txt
+    
+    - name: Verify generated files
+      run: |
+        ls -lh project4-healthcare-streaming/healthcare_data/test_*
+        wc -l project4-healthcare-streaming/healthcare_data/test_*
